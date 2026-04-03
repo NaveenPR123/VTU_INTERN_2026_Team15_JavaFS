@@ -667,11 +667,109 @@ function TeacherMarks({ C }) {
   );
 }
 
+function ChangePasswordModal({ role, user, C, onClose }) {
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword,     setNewPassword]     = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showCurrent,     setShowCurrent]     = useState(false);
+  const [showNew,         setShowNew]         = useState(false);
+  const [loading,         setLoading]         = useState(false);
+  const [error,           setError]           = useState("");
+  const [success,         setSuccess]         = useState("");
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      setError("Please fill in all fields."); return;
+    }
+    if (newPassword !== confirmPassword) {
+      setError("New passwords do not match."); return;
+    }
+    if (newPassword.length < 6) {
+      setError("New password must be at least 6 characters."); return;
+    }
+    setError(""); setLoading(true);
+    try {
+      const res = await fetch(`http://localhost:8080/api/auth/change-password/${role}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: role === "student" ? user?.studentId : user?.teacherId,
+          currentPassword,
+          newPassword,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setSuccess("Password changed successfully!");
+        setTimeout(() => onClose(), 1800);
+      } else {
+        setError(data.message || "Failed to change password.");
+      }
+    } catch {
+      setError("Cannot connect to server.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const inputStyle = { width:"100%", padding:"11px 14px", background:C.surface2, border:`1px solid ${C.border}`, borderRadius:9, fontSize:14, color:C.text, fontFamily:body, outline:"none" };
+  const rowStyle   = { display:"flex", alignItems:"center", gap:8, background:C.surface2, border:`1px solid ${C.border}`, borderRadius:9, padding:"11px 14px" };
+
+  return (
+    <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.55)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:1000 }}
+         onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:16, padding:28, width:420, maxWidth:"90vw", boxShadow:"0 20px 60px rgba(0,0,0,0.4)" }}>
+        <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:22 }}>
+          <div style={{ fontFamily:font, fontSize:17, fontWeight:600, color:C.text }}>Change Password</div>
+          <button onClick={onClose} style={{ background:"none", border:"none", cursor:"pointer", fontSize:18, color:C.textDim, lineHeight:1 }}>✕</button>
+        </div>
+
+        <form onSubmit={handleSubmit}>
+          {[
+            ["Current Password", currentPassword, setCurrentPassword, showCurrent, setShowCurrent],
+            ["New Password",     newPassword,     setNewPassword,     showNew,     setShowNew],
+            ["Confirm New Password", confirmPassword, setConfirmPassword, showNew, setShowNew],
+          ].map(([label, val, setter, show, setShow], i) => (
+            <div key={label} style={{ marginBottom:14 }}>
+              <label style={{ display:"block", fontSize:11, fontWeight:500, letterSpacing:"0.08em", textTransform:"uppercase", color:C.textDim, marginBottom:7 }}>{label}</label>
+              <div style={rowStyle}>
+                <input value={val} onChange={e=>setter(e.target.value)} type={show?"text":"password"} placeholder={`Enter ${label.toLowerCase()}`}
+                  style={{ flex:1, background:"transparent", border:"none", outline:"none", fontSize:14, color:C.text, fontFamily:body }}/>
+                {i < 2 && (
+                  <button type="button" onClick={()=>setShow(!show)}
+                    style={{ background:"none", border:"none", cursor:"pointer", fontSize:12, color:C.textDim, fontFamily:body }}>{show?"Hide":"Show"}</button>
+                )}
+              </div>
+            </div>
+          ))}
+
+          {error   && <div style={{ fontSize:13, color:C.rose,  marginBottom:14, padding:"9px 12px", background:C.roseDim,  borderRadius:8 }}>⚠ {error}</div>}
+          {success && <div style={{ fontSize:13, color:C.teal,  marginBottom:14, padding:"9px 12px", background:C.tealDim,  borderRadius:8 }}>✓ {success}</div>}
+
+          <div style={{ display:"flex", gap:10, marginTop:4 }}>
+            <button type="button" onClick={onClose}
+              style={{ flex:1, padding:"11px", borderRadius:9, border:`1px solid ${C.border}`, background:"transparent", color:C.textMuted, fontFamily:body, fontSize:14, cursor:"pointer" }}>
+              Cancel
+            </button>
+            <button type="submit" disabled={loading}
+              style={{ flex:1, padding:"11px", borderRadius:9, border:"none", background:"linear-gradient(135deg,#e8b96a,#c4973a)", color:"#0d1117", fontFamily:body, fontSize:14, fontWeight:600, cursor:loading?"not-allowed":"pointer", opacity:loading?0.7:1 }}>
+              {loading ? "Updating…" : "Update Password"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 function Settings({ role, user, onLogout, C }) {
   const [notif, setNotif] = useState({ marks:true, attendance:true, assignments:true });
+  const [showChangePwd, setShowChangePwd] = useState(false);
   const isStudent = role==="student";
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:20, maxWidth:660 }}>
+      {showChangePwd && <ChangePasswordModal role={role} user={user} C={C} onClose={()=>setShowChangePwd(false)}/>}
       <Panel C={C}>
         <PH title="Profile" C={C}/>
         <div style={{ display:"flex", alignItems:"center", gap:16, padding:"14px 16px", background:C.surface2, borderRadius:11, border:`1px solid ${C.border}`, marginBottom:18 }}>
@@ -716,7 +814,7 @@ function Settings({ role, user, onLogout, C }) {
       <Panel C={C}>
         <PH title="Account" C={C}/>
         <div style={{ display:"flex", gap:10 }}>
-          <button style={{ padding:"10px 20px", borderRadius:9, border:`1px solid ${C.border}`, background:"transparent", color:C.textMuted, fontFamily:body, fontSize:13, cursor:"pointer" }}>Change Password</button>
+          <button onClick={()=>setShowChangePwd(true)} style={{ padding:"10px 20px", borderRadius:9, border:`1px solid ${C.border}`, background:"transparent", color:C.textMuted, fontFamily:body, fontSize:13, cursor:"pointer" }}>Change Password</button>
           <button onClick={onLogout} style={{ padding:"10px 20px", borderRadius:9, border:`1px solid rgba(248,113,113,0.3)`, background:C.roseDim, color:C.rose, fontFamily:body, fontSize:13, cursor:"pointer" }}>Sign Out</button>
         </div>
       </Panel>

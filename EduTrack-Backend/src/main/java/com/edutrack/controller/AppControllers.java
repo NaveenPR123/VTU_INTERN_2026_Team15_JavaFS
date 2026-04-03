@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.Map;
 
 // ══════════════════════════════════════════════════════════════
 //  COURSE CONTROLLER
@@ -215,15 +216,17 @@ class MarksController {
 
 // ══════════════════════════════════════════════════════════════
 //  STUDENT CONTROLLER
-//  GET /api/students        → All students
-//  GET /api/students/{id}   → Student by ID
+//  GET  /api/students              → All students
+//  GET  /api/students/{id}         → Student by ID
+//  POST /api/students/{id}/change-password → Change password (Settings)
 // ══════════════════════════════════════════════════════════════
 @RestController
 @RequestMapping("/api/students")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = {"http://localhost:3000","http://localhost:3006","http://localhost:5500"})
 class StudentController {
 
     @Autowired private StudentRepository studentRepo;
+    @Autowired private AuthService authService;
 
     @GetMapping
     public List<Student> getAll() {
@@ -236,19 +239,34 @@ class StudentController {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
+
+    @PostMapping("/{id}/change-password")
+    public ResponseEntity<Map<String, Object>> changePassword(
+            @PathVariable Integer id,
+            @RequestBody Map<String, String> body) {
+        String currentPassword = body.get("currentPassword");
+        String newPassword = body.get("newPassword");
+        if (currentPassword == null || newPassword == null) {
+            return ResponseEntity.ok(Map.of("success", false, "message", "currentPassword and newPassword are required"));
+        }
+        Map<String, Object> result = authService.changeStudentPassword(id, currentPassword, newPassword);
+        return ResponseEntity.ok(result);
+    }
 }
 
 // ══════════════════════════════════════════════════════════════
 //  TEACHER CONTROLLER
-//  GET /api/teachers        → All teachers
-//  GET /api/teachers/{id}   → Teacher by ID
+//  GET  /api/teachers              → All teachers
+//  GET  /api/teachers/{id}         → Teacher by ID
+//  POST /api/teachers/{id}/change-password → Change password (Settings)
 // ══════════════════════════════════════════════════════════════
 @RestController
 @RequestMapping("/api/teachers")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = {"http://localhost:3000","http://localhost:3006","http://localhost:5500"})
 class TeacherController {
 
     @Autowired private TeacherRepository teacherRepo;
+    @Autowired private AuthService authService;
 
     @GetMapping
     public List<Teacher> getAll() {
@@ -260,5 +278,18 @@ class TeacherController {
         return teacherRepo.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PostMapping("/{id}/change-password")
+    public ResponseEntity<Map<String, Object>> changePassword(
+            @PathVariable Integer id,
+            @RequestBody Map<String, String> body) {
+        String currentPassword = body.get("currentPassword");
+        String newPassword = body.get("newPassword");
+        if (currentPassword == null || newPassword == null) {
+            return ResponseEntity.ok(Map.of("success", false, "message", "currentPassword and newPassword are required"));
+        }
+        Map<String, Object> result = authService.changeTeacherPassword(id, currentPassword, newPassword);
+        return ResponseEntity.ok(result);
     }
 }

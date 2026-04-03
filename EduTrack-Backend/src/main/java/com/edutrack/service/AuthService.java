@@ -100,6 +100,50 @@ public class AuthService {
     }
 
     @Transactional
+    public Map<String, Object> changeStudentPassword(Integer studentId, String currentPassword, String newPassword) {
+        Map<String, Object> response = new HashMap<>();
+        Optional<Student> opt = studentRepo.findById(studentId);
+        if (opt.isEmpty()) {
+            response.put("success", false);
+            response.put("message", "Student not found");
+            return response;
+        }
+        Student student = opt.get();
+        if (!encoder.matches(currentPassword, student.getPassword())) {
+            response.put("success", false);
+            response.put("message", "Current password is incorrect");
+            return response;
+        }
+        student.setPassword(encoder.encode(newPassword));
+        studentRepo.save(student);
+        response.put("success", true);
+        response.put("message", "Password changed successfully");
+        return response;
+    }
+
+    @Transactional
+    public Map<String, Object> changeTeacherPassword(Integer teacherId, String currentPassword, String newPassword) {
+        Map<String, Object> response = new HashMap<>();
+        Optional<Teacher> opt = teacherRepo.findById(teacherId);
+        if (opt.isEmpty()) {
+            response.put("success", false);
+            response.put("message", "Teacher not found");
+            return response;
+        }
+        Teacher teacher = opt.get();
+        if (!encoder.matches(currentPassword, teacher.getPassword())) {
+            response.put("success", false);
+            response.put("message", "Current password is incorrect");
+            return response;
+        }
+        teacher.setPassword(encoder.encode(newPassword));
+        teacherRepo.save(teacher);
+        response.put("success", true);
+        response.put("message", "Password changed successfully");
+        return response;
+    }
+
+    @Transactional
     public boolean resetStudentPassword(String email, String otp, String newPassword) {
         System.out.println("[AUTH] resetStudentPassword called for email: " + email);
         Optional<Student> opt = studentRepo.findByEmail(email);
