@@ -6,6 +6,7 @@ import ThemeToggle from "./ThemeToggle.jsx";
 const ROLES = [
   { id:"student", icon:"🎓", label:"Student", desc:"View courses, attendance & marks" },
   { id:"teacher", icon:"📚", label:"Teacher", desc:"Manage courses, assignments & marks" },
+  { id:"admin",   icon:"🛡️", label:"Admin",   desc:"Manage users, courses & system" },
 ];
 
 export default function Login({ onLogin, onGoSignup, onGoForgotPassword }) {

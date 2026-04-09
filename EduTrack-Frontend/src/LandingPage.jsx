@@ -13,7 +13,7 @@ const LandingPage = ({ onGoSignin, onGoSignup }) => {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const g = `linear-gradient(135deg, ${C.gold} 0%, ${C.teal} 100%)`;
+  const g = `linear-gradient(135deg, #e8b96a 0%, #4ecdc4 100%)`;
 
   // ── shared style helpers ──
   const card = {
@@ -35,12 +35,12 @@ const LandingPage = ({ onGoSignin, onGoSignup }) => {
     { emoji: '📝', title: 'Assignment Lifecycle', desc: 'Create, distribute, submit and grade assignments — all tracked in one place with deadline reminders.' },
     { emoji: '🏆', title: 'Marks & Scorecards', desc: 'Enter exam scores once and let EduTrack generate per-student scorecards automatically.' },
     { emoji: '📉', title: 'Shortage Alerts', desc: 'Automatic warnings when a student\'s attendance dips below the required threshold.' },
-    { emoji: '🔐', title: 'Two-role Security', desc: 'Separate, secure portals for teachers and students. Each role sees exactly what it needs — nothing more.' },
+    { emoji: '🔐', title: 'Three-role Security', desc: 'Separate, secure portals for students, teachers, and admins. Each role sees exactly what it needs — nothing more.' },
     { emoji: '📱', title: 'Works Everywhere', desc: 'Fully responsive interface that works on phones, tablets, and desktops without installing anything.' },
   ];
 
   const steps = [
-    { n: '01', title: 'Create your account', desc: 'Sign up as a student or teacher in under a minute.' },
+    { n: '01', title: 'Create your account', desc: 'Sign up as a student or teacher in under a minute. Admins are set up by the institution.' },
     { n: '02', title: 'Join your courses', desc: 'Teachers set up courses; students enroll with a code.' },
     { n: '03', title: 'Track everything', desc: 'Attendance, marks, and assignments — all in one view.' },
   ];
@@ -88,10 +88,10 @@ const LandingPage = ({ onGoSignin, onGoSignup }) => {
 
         {/* headline */}
         <h1 style={{ fontFamily: font, fontSize: 'clamp(2.4rem, 5vw, 4rem)', fontWeight: 700, textAlign: 'center', lineHeight: 1.15, marginBottom: '1.5rem', color: C.text }}>
-          Academic records,<br />
-          <span style={{ background: g, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+          <div>Academic records,</div>
+          <div key={isDark ? 'dark' : 'light'} style={{ background: g, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
             finally under control.
-          </span>
+          </div>
         </h1>
 
         <p style={{ textAlign: 'center', fontSize: '1.1rem', color: C.textMuted, lineHeight: 1.75, maxWidth: 560, margin: '0 auto 2.5rem', fontFamily: body }}>
@@ -110,7 +110,7 @@ const LandingPage = ({ onGoSignin, onGoSignup }) => {
 
         {/* Stats row */}
         <div style={{ display: 'flex', justifyContent: 'center', gap: '3rem', flexWrap: 'wrap' }}>
-          {[['2 Roles', 'Teacher & Student'], ['100%', 'Free to use'], ['Real-time', 'Live updates']].map(([val, lbl]) => (
+          {[['3 Roles', 'Student, Teacher & Admin'], ['100%', 'Free to use'], ['Real-time', 'Live updates']].map(([val, lbl]) => (
             <div key={lbl} style={{ textAlign: 'center' }}>
               <div style={{ fontFamily: font, fontSize: '1.8rem', fontWeight: 700, color: C.gold }}>{val}</div>
               <div style={{ fontSize: 12, color: C.textMuted, fontWeight: 500, marginTop: 2 }}>{lbl}</div>
@@ -160,7 +160,7 @@ const LandingPage = ({ onGoSignin, onGoSignup }) => {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px,1fr))', gap: '1.5rem' }}>
             {steps.map(step => (
               <div key={step.n} style={{ ...card, background: C.surface2, display: 'flex', flexDirection: 'column', gap: 12 }}>
-                <div style={{ fontFamily: font, fontSize: '2rem', fontWeight: 700, background: g, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>{step.n}</div>
+                <div key={`${step.n}-${isDark}`} style={{ fontFamily: font, fontSize: '2rem', fontWeight: 700, background: g, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', display: 'inline-block', color: 'transparent' }}>{step.n}</div>
                 <div style={{ fontSize: '1rem', fontWeight: 700, color: C.text, fontFamily: font }}>{step.title}</div>
                 <div style={{ fontSize: '0.875rem', color: C.textMuted, lineHeight: 1.65 }}>{step.desc}</div>
               </div>
@@ -197,10 +197,10 @@ const LandingPage = ({ onGoSignin, onGoSignup }) => {
       <section style={{ padding: '5rem 2rem', background: C.surface }}>
         <div style={{ maxWidth: 1200, margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-            <h2 style={{ fontFamily: font, fontSize: '2rem', fontWeight: 700, color: C.text }}>Two roles, one platform</h2>
+            <h2 style={{ fontFamily: font, fontSize: '2rem', fontWeight: 700, color: C.text }}>Three roles, one platform</h2>
             <p style={{ color: C.textMuted, fontSize: '0.95rem', marginTop: 10 }}>Each role gets a tailored experience built for their workflow.</p>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px,1fr))', gap: '1.5rem' }}>
             {/* Teacher */}
             <div style={{ ...card, borderTop: `3px solid ${C.gold}` }}>
               <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>📚</div>
@@ -221,6 +221,18 @@ const LandingPage = ({ onGoSignin, onGoSignup }) => {
                 {['Check attendance across all subjects','View marks and grade history','Track pending and submitted assignments','Get alerts before attendance falls short'].map(item => (
                   <li key={item} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: '0.875rem', color: C.textMuted }}>
                     <span style={{ color: C.teal, marginTop: 1 }}>✓</span>{item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            {/* Admin */}
+            <div style={{ ...card, borderTop: `3px solid ${C.purple}` }}>
+              <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>🛡️</div>
+              <div style={{ fontFamily: font, fontSize: '1.2rem', fontWeight: 700, color: C.purple, marginBottom: '0.75rem' }}>For Admins</div>
+              <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {['Manage all students and teachers','View and delete courses system-wide','Monitor platform usage at a glance','Full control over user accounts'].map(item => (
+                  <li key={item} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: '0.875rem', color: C.textMuted }}>
+                    <span style={{ color: C.purple, marginTop: 1 }}>✓</span>{item}
                   </li>
                 ))}
               </ul>
@@ -258,7 +270,7 @@ const LandingPage = ({ onGoSignin, onGoSignup }) => {
               <span style={{ fontFamily: font, fontSize: 18, fontWeight: 700, color: C.text }}>Edu<span style={{ color: C.gold }}>Track</span></span>
             </div>
             <p style={{ fontSize: 13, color: C.textMuted, lineHeight: 1.7, maxWidth: 300 }}>
-              A student-teacher academic platform built with React and Spring Boot. Track attendance, marks, and assignments in one place.
+              A student-teacher-admin academic platform built with React and Spring Boot. Track attendance, marks, and assignments in one place.
             </p>
           </div>
           <div>
@@ -271,7 +283,7 @@ const LandingPage = ({ onGoSignin, onGoSignup }) => {
           </div>
           <div>
             <div style={{ fontSize: 11, fontWeight: 700, color: C.textDim, letterSpacing: '0.08em', marginBottom: '1rem' }}>ROLES</div>
-            {['Teacher portal','Student portal'].map(l => (
+            {['Teacher portal','Student portal','Admin portal'].map(l => (
               <div key={l} style={{ fontSize: 13, color: C.textMuted, marginBottom: '0.6rem', fontWeight: 500 }}>{l}</div>
             ))}
           </div>

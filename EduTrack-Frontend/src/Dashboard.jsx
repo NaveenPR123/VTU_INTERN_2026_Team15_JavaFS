@@ -28,6 +28,14 @@ const TEACHER_NAV = [
   { icon:"⚙️", label:"Settings",        section:"Account"  },
 ];
 
+const ADMIN_NAV = [
+  { icon:"⊞", label:"Dashboard",        section:"Overview" },
+  { icon:"🎓", label:"Students",         section:"Manage"   },
+  { icon:"📚", label:"Teachers",         section:"Manage"   },
+  { icon:"📖", label:"Courses",          section:"Manage"   },
+  { icon:"⚙️", label:"Settings",         section:"Account"  },
+];
+
 /* ── Static data (no C references here) ── */
 const COURSES_DATA = [
   { id:1, icon:"🔬", name:"Data Structures",      credits:4, teacher:"Prof. R. Sharma",  enrolled:62, progress:78, colorKey:"teal"   },
@@ -667,6 +675,273 @@ function TeacherMarks({ C }) {
   );
 }
 
+/* ══════════════════════════════════════════════
+   ADMIN PAGES
+══════════════════════════════════════════════ */
+
+function AdminDashboard({ C }) {
+  const [stats, setStats] = useState({ students:0, teachers:0, courses:0 });
+  const [loading, setLoading] = useState(true);
+
+  useState(() => {
+    Promise.all([
+      fetch("http://localhost:8080/api/students").then(r=>r.json()),
+      fetch("http://localhost:8080/api/teachers").then(r=>r.json()),
+      fetch("http://localhost:8080/api/courses").then(r=>r.json()),
+    ]).then(([students, teachers, courses]) => {
+      setStats({
+        students: Array.isArray(students) ? students.length : 0,
+        teachers: Array.isArray(teachers) ? teachers.length : 0,
+        courses:  Array.isArray(courses)  ? courses.length  : 0,
+      });
+      setLoading(false);
+    }).catch(() => setLoading(false));
+  }, []);
+
+  const cards = [
+    { label:"Total Students", value: loading ? "…" : stats.students, sub:"registered",       color:C.teal,   icon:"🎓" },
+    { label:"Total Teachers",  value: loading ? "…" : stats.teachers, sub:"registered",       color:C.gold,   icon:"📚" },
+    { label:"Total Courses",   value: loading ? "…" : stats.courses,  sub:"this semester",    color:C.purple, icon:"📖" },
+    { label:"Departments",     value:"8",                              sub:"active",           color:C.blue,   icon:"🏛️" },
+  ];
+
+  return (
+    <div>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:16, marginBottom:24 }}>
+        {cards.map((s,i) => (
+          <div key={i} className="stat-card" style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:20, position:"relative", overflow:"hidden", animationDelay:`${i*0.08}s` }}>
+            <div style={{ position:"absolute", top:0, right:0, width:80, height:80, background:`radial-gradient(circle at 80% 20%,${s.color}22 0%,transparent 70%)`, pointerEvents:"none" }}/>
+            <div style={{ fontSize:11, fontWeight:500, letterSpacing:"0.08em", textTransform:"uppercase", color:C.textDim, marginBottom:10 }}>{s.label}</div>
+            <div style={{ fontFamily:font, fontSize:32, fontWeight:700, lineHeight:1, marginBottom:8, color:s.color }}>{s.value}</div>
+            <div style={{ fontSize:12, color:C.textMuted }}>{s.sub}</div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
+        <Panel C={C}>
+          <PH title="Quick Actions" C={C}/>
+          {[
+            { icon:"🎓", label:"View All Students",  color:C.teal   },
+            { icon:"📚", label:"View All Teachers",  color:C.gold   },
+            { icon:"📖", label:"View All Courses",   color:C.purple },
+          ].map((a,i) => (
+            <div key={i} style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 14px", background:C.surface2, border:`1px solid ${C.border}`, borderRadius:10, marginBottom:8, cursor:"default" }}>
+              <div style={{ width:34, height:34, borderRadius:9, background:`${a.color}18`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:16 }}>{a.icon}</div>
+              <span style={{ fontSize:13.5, fontWeight:500, color:C.text }}>{a.label}</span>
+            </div>
+          ))}
+        </Panel>
+
+        <Panel C={C}>
+          <PH title="System Info" C={C}/>
+          {[
+            ["Academic Year", "2025–26"],
+            ["Active Semester", "Even Sem"],
+            ["Platform", "EduTrack v1.0"],
+            ["Status", "✅ All systems operational"],
+          ].map(([k,v]) => (
+            <div key={k} style={{ display:"flex", justifyContent:"space-between", padding:"10px 0", borderBottom:`1px solid ${C.border}`, fontSize:13 }}>
+              <span style={{ color:C.textMuted }}>{k}</span>
+              <span style={{ color:C.text, fontWeight:500 }}>{v}</span>
+            </div>
+          ))}
+        </Panel>
+      </div>
+    </div>
+  );
+}
+
+function AdminStudents({ C }) {
+  const [students, setStudents] = useState([]);
+  const [loading,  setLoading]  = useState(true);
+  const [search,   setSearch]   = useState("");
+  const [deleting, setDeleting] = useState(null);
+
+  const load = () => {
+    setLoading(true);
+    fetch("http://localhost:8080/api/students")
+      .then(r=>r.json()).then(d=>{ setStudents(Array.isArray(d)?d:[]); setLoading(false); })
+      .catch(()=>setLoading(false));
+  };
+  useState(()=>{ load(); }, []);
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Delete this student?")) return;
+    setDeleting(id);
+    await fetch(`http://localhost:8080/api/students/${id}`, { method:"DELETE" });
+    setDeleting(null);
+    load();
+  };
+
+  const filtered = students.filter(s =>
+    s.name?.toLowerCase().includes(search.toLowerCase()) ||
+    s.email?.toLowerCase().includes(search.toLowerCase()) ||
+    s.department?.toLowerCase().includes(search.toLowerCase())
+  );
+
+  return (
+    <Panel C={C}>
+      <PH title={`Students (${students.length})`} C={C}/>
+      <div style={{ display:"flex", alignItems:"center", gap:8, background:C.surface2, border:`1px solid ${C.border}`, borderRadius:9, padding:"9px 14px", marginBottom:16 }}>
+        <span style={{ color:C.textDim }}>🔍</span>
+        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search by name, email or department…"
+          style={{ flex:1, background:"transparent", border:"none", outline:"none", fontSize:13, color:C.text, fontFamily:body }}/>
+      </div>
+      {loading ? (
+        <div style={{ textAlign:"center", padding:32, color:C.textMuted }}>Loading…</div>
+      ) : filtered.length === 0 ? (
+        <div style={{ textAlign:"center", padding:32, color:C.textMuted }}>No students found.</div>
+      ) : (
+        <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+          {filtered.map((s,i) => (
+            <div key={s.studentId||i} style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 14px", background:C.surface2, border:`1px solid ${C.border}`, borderRadius:10 }}>
+              <div style={{ width:36, height:36, borderRadius:"50%", background:`linear-gradient(135deg,#4ecdc4,#2d9e97)`, display:"flex", alignItems:"center", justifyContent:"center", fontWeight:700, fontSize:13, color:"#0d1117", flexShrink:0 }}>
+                {s.name?.split(" ").map(n=>n[0]).join("").slice(0,2).toUpperCase()}
+              </div>
+              <div style={{ flex:1, minWidth:0 }}>
+                <div style={{ fontSize:13.5, fontWeight:500, color:C.text }}>{s.name}</div>
+                <div style={{ fontSize:12, color:C.textMuted }}>{s.email}</div>
+              </div>
+              <div style={{ fontSize:11, padding:"3px 10px", borderRadius:20, background:C.tealDim, color:C.teal }}>{s.department}</div>
+              <div style={{ fontSize:11, padding:"3px 10px", borderRadius:20, background:C.goldDim, color:C.gold }}>{s.year}</div>
+              <button onClick={()=>handleDelete(s.studentId)} disabled={deleting===s.studentId}
+                style={{ padding:"6px 12px", borderRadius:8, border:`1px solid rgba(248,113,113,0.3)`, background:C.roseDim, color:C.rose, fontFamily:body, fontSize:12, cursor:"pointer" }}>
+                {deleting===s.studentId ? "…" : "Delete"}
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </Panel>
+  );
+}
+
+function AdminTeachers({ C }) {
+  const [teachers, setTeachers] = useState([]);
+  const [loading,  setLoading]  = useState(true);
+  const [search,   setSearch]   = useState("");
+  const [deleting, setDeleting] = useState(null);
+
+  const load = () => {
+    setLoading(true);
+    fetch("http://localhost:8080/api/teachers")
+      .then(r=>r.json()).then(d=>{ setTeachers(Array.isArray(d)?d:[]); setLoading(false); })
+      .catch(()=>setLoading(false));
+  };
+  useState(()=>{ load(); }, []);
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Delete this teacher?")) return;
+    setDeleting(id);
+    await fetch(`http://localhost:8080/api/teachers/${id}`, { method:"DELETE" });
+    setDeleting(null);
+    load();
+  };
+
+  const filtered = teachers.filter(t =>
+    t.name?.toLowerCase().includes(search.toLowerCase()) ||
+    t.email?.toLowerCase().includes(search.toLowerCase()) ||
+    t.department?.toLowerCase().includes(search.toLowerCase())
+  );
+
+  return (
+    <Panel C={C}>
+      <PH title={`Teachers (${teachers.length})`} C={C}/>
+      <div style={{ display:"flex", alignItems:"center", gap:8, background:C.surface2, border:`1px solid ${C.border}`, borderRadius:9, padding:"9px 14px", marginBottom:16 }}>
+        <span style={{ color:C.textDim }}>🔍</span>
+        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search by name, email or department…"
+          style={{ flex:1, background:"transparent", border:"none", outline:"none", fontSize:13, color:C.text, fontFamily:body }}/>
+      </div>
+      {loading ? (
+        <div style={{ textAlign:"center", padding:32, color:C.textMuted }}>Loading…</div>
+      ) : filtered.length === 0 ? (
+        <div style={{ textAlign:"center", padding:32, color:C.textMuted }}>No teachers found.</div>
+      ) : (
+        <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+          {filtered.map((t,i) => (
+            <div key={t.teacherId||i} style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 14px", background:C.surface2, border:`1px solid ${C.border}`, borderRadius:10 }}>
+              <div style={{ width:36, height:36, borderRadius:"50%", background:`linear-gradient(135deg,#e8b96a,#c4973a)`, display:"flex", alignItems:"center", justifyContent:"center", fontWeight:700, fontSize:13, color:"#0d1117", flexShrink:0 }}>
+                {t.name?.split(" ").map(n=>n[0]).join("").slice(0,2).toUpperCase()}
+              </div>
+              <div style={{ flex:1, minWidth:0 }}>
+                <div style={{ fontSize:13.5, fontWeight:500, color:C.text }}>{t.name}</div>
+                <div style={{ fontSize:12, color:C.textMuted }}>{t.email}</div>
+              </div>
+              <div style={{ fontSize:11, padding:"3px 10px", borderRadius:20, background:C.goldDim, color:C.gold }}>{t.department}</div>
+              <button onClick={()=>handleDelete(t.teacherId)} disabled={deleting===t.teacherId}
+                style={{ padding:"6px 12px", borderRadius:8, border:`1px solid rgba(248,113,113,0.3)`, background:C.roseDim, color:C.rose, fontFamily:body, fontSize:12, cursor:"pointer" }}>
+                {deleting===t.teacherId ? "…" : "Delete"}
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </Panel>
+  );
+}
+
+function AdminCourses({ C }) {
+  const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [search,  setSearch]  = useState("");
+  const [deleting,setDeleting]= useState(null);
+
+  const load = () => {
+    setLoading(true);
+    fetch("http://localhost:8080/api/courses")
+      .then(r=>r.json()).then(d=>{ setCourses(Array.isArray(d)?d:[]); setLoading(false); })
+      .catch(()=>setLoading(false));
+  };
+  useState(()=>{ load(); }, []);
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Delete this course?")) return;
+    setDeleting(id);
+    await fetch(`http://localhost:8080/api/courses/${id}`, { method:"DELETE" });
+    setDeleting(null);
+    load();
+  };
+
+  const filtered = courses.filter(c =>
+    c.courseName?.toLowerCase().includes(search.toLowerCase()) ||
+    c.teacher?.name?.toLowerCase().includes(search.toLowerCase())
+  );
+
+  return (
+    <Panel C={C}>
+      <PH title={`Courses (${courses.length})`} C={C}/>
+      <div style={{ display:"flex", alignItems:"center", gap:8, background:C.surface2, border:`1px solid ${C.border}`, borderRadius:9, padding:"9px 14px", marginBottom:16 }}>
+        <span style={{ color:C.textDim }}>🔍</span>
+        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search by course name or teacher…"
+          style={{ flex:1, background:"transparent", border:"none", outline:"none", fontSize:13, color:C.text, fontFamily:body }}/>
+      </div>
+      {loading ? (
+        <div style={{ textAlign:"center", padding:32, color:C.textMuted }}>Loading…</div>
+      ) : filtered.length === 0 ? (
+        <div style={{ textAlign:"center", padding:32, color:C.textMuted }}>No courses found.</div>
+      ) : (
+        <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+          {filtered.map((c,i) => (
+            <div key={c.courseId||i} style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 14px", background:C.surface2, border:`1px solid ${C.border}`, borderRadius:10 }}>
+              <div style={{ width:36, height:36, borderRadius:9, background:C.purpleDim, display:"flex", alignItems:"center", justifyContent:"center", fontSize:18 }}>📖</div>
+              <div style={{ flex:1, minWidth:0 }}>
+                <div style={{ fontSize:13.5, fontWeight:500, color:C.text }}>{c.courseName}</div>
+                <div style={{ fontSize:12, color:C.textMuted }}>Teacher: {c.teacher?.name || "—"}</div>
+              </div>
+              <div style={{ fontSize:11, padding:"3px 10px", borderRadius:20, background:C.purpleDim, color:C.purple }}>{c.credits} credits</div>
+              <button onClick={()=>handleDelete(c.courseId)} disabled={deleting===c.courseId}
+                style={{ padding:"6px 12px", borderRadius:8, border:`1px solid rgba(248,113,113,0.3)`, background:C.roseDim, color:C.rose, fontFamily:body, fontSize:12, cursor:"pointer" }}>
+                {deleting===c.courseId ? "…" : "Delete"}
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </Panel>
+  );
+}
+
 function ChangePasswordModal({ role, user, C, onClose }) {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword,     setNewPassword]     = useState("");
@@ -690,14 +965,11 @@ function ChangePasswordModal({ role, user, C, onClose }) {
     }
     setError(""); setLoading(true);
     try {
-      const res = await fetch(`http://localhost:8080/api/auth/change-password/${role}`, {
+      const id  = role === "student" ? user?.studentId : user?.teacherId;
+      const res = await fetch(`http://localhost:8080/api/${role}s/${id}/change-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: role === "student" ? user?.studentId : user?.teacherId,
-          currentPassword,
-          newPassword,
-        }),
+        body: JSON.stringify({ currentPassword, newPassword }),
       });
       const data = await res.json();
       if (data.success) {
@@ -877,10 +1149,11 @@ function SemSelector({ user, onSelect, C }) {
    MAIN DASHBOARD SHELL
 ══════════════════════════════════════════════ */
 export default function Dashboard({ role="student", user=null, onLogout }) {
- const { theme: C } = useTheme(); // ← theme hook here only
+ const { theme: C } = useTheme();
 
   const isStudent = role==="student";
-  const navItems  = isStudent ? STUDENT_NAV : TEACHER_NAV;
+  const isAdmin   = role==="admin";
+  const navItems  = isStudent ? STUDENT_NAV : isAdmin ? ADMIN_NAV : TEACHER_NAV;
 
   const [active,          setActive]          = useState("Dashboard");
   const [search,          setSearch]          = useState("");
@@ -888,6 +1161,16 @@ export default function Dashboard({ role="student", user=null, onLogout }) {
   const [showSemSelector, setShowSemSelector] = useState(isStudent);
 
   const getPage = () => {
+    if (isAdmin) {
+      switch(active) {
+        case "Dashboard": return <AdminDashboard C={C}/>;
+        case "Students":  return <AdminStudents C={C}/>;
+        case "Teachers":  return <AdminTeachers C={C}/>;
+        case "Courses":   return <AdminCourses C={C}/>;
+        case "Settings":  return <Settings role={role} user={user} onLogout={onLogout} C={C}/>;
+        default:          return <AdminDashboard C={C}/>;
+      }
+    }
     if (isStudent) {
       switch(active) {
         case "Dashboard":   return <StudentDashboard C={C}/>;
@@ -898,25 +1181,35 @@ export default function Dashboard({ role="student", user=null, onLogout }) {
         case "Settings":    return <Settings role={role} user={user} onLogout={onLogout} C={C}/>;
         default:            return <StudentDashboard C={C}/>;
       }
-    } else {
-      switch(active) {
-        case "Dashboard":       return <TeacherDashboard C={C}/>;
-        case "Manage Courses":  return <TeacherCourses C={C}/>;
-        case "Mark Attendance": return <TeacherAttendance C={C}/>;
-        case "Assignments":     return <TeacherAssignments C={C}/>;
-        case "Enter Marks":     return <TeacherMarks C={C}/>;
-        case "Settings":        return <Settings role={role} user={user} onLogout={onLogout} C={C}/>;
-        default:                return <TeacherDashboard C={C}/>;
-      }
+    }
+    switch(active) {
+      case "Dashboard":       return <TeacherDashboard C={C}/>;
+      case "Manage Courses":  return <TeacherCourses C={C}/>;
+      case "Mark Attendance": return <TeacherAttendance C={C}/>;
+      case "Assignments":     return <TeacherAssignments C={C}/>;
+      case "Enter Marks":     return <TeacherMarks C={C}/>;
+      case "Settings":        return <Settings role={role} user={user} onLogout={onLogout} C={C}/>;
+      default:                return <TeacherDashboard C={C}/>;
     }
   };
 
-  const userInitials = user?.name ? user.name.split(" ").map(n=>n[0]).join("").slice(0,2).toUpperCase() : (isStudent?"AK":"RS");
-  const userName     = user?.name || (isStudent ? "Student" : "Teacher");
+  const userInitials = user?.name ? user.name.split(" ").map(n=>n[0]).join("").slice(0,2).toUpperCase() : (isStudent?"AK": isAdmin?"AD":"RS");
+  const userName     = user?.name || (isStudent ? "Student" : isAdmin ? "Admin" : "Teacher");
   const userSub      = isStudent
     ? (user?.department && user?.year ? `${user.department} · ${user.year}` : "CSE · 3rd Year")
+    : isAdmin ? "System Administrator"
     : (user?.department || "Computer Science");
-  const avatarBg = isStudent ? "linear-gradient(135deg,#4ecdc4,#2d9e97)" : "linear-gradient(135deg,#e8b96a,#c4973a)";
+  const avatarBg = isStudent
+    ? "linear-gradient(135deg,#4ecdc4,#2d9e97)"
+    : isAdmin ? "linear-gradient(135deg,#a78bfa,#7c3aed)"
+    : "linear-gradient(135deg,#e8b96a,#c4973a)";
+
+  const portalColor  = isStudent ? C.teal   : isAdmin ? C.purple : C.gold;
+  const portalDim    = isStudent ? C.tealDim: isAdmin ? C.purpleDim : C.goldDim;
+  const portalBorder = isStudent ? C.tealDim: isAdmin ? C.purpleDim : C.goldMid;
+  const portalIcon   = isStudent ? "🎓"     : isAdmin ? "🛡️" : "📚";
+  const portalLabel  = isStudent ? "Student Portal" : isAdmin ? "Admin Portal" : "Teacher Portal";
+  const badgeLabel   = isStudent ? (semester || user?.year || "Sem") : isAdmin ? "Admin" : "AY 25–26";
 
   return (
     <>
@@ -947,13 +1240,13 @@ export default function Dashboard({ role="student", user=null, onLogout }) {
             <span style={{ fontFamily:font, fontSize:18, fontWeight:600, color:C.text }}>Edu<span style={{ color:C.gold }}>Track</span></span>
           </div>
 
-          <div style={{ margin:"14px 14px 4px", padding:"8px 12px", background:isStudent?C.tealDim:C.goldDim, borderRadius:9, border:`1px solid ${isStudent?C.tealDim:C.goldMid}`, display:"flex", alignItems:"center", gap:8 }}>
-            <span style={{ fontSize:16 }}>{isStudent?"🎓":"📚"}</span>
-            <span style={{ fontSize:12, fontWeight:500, color:isStudent?C.teal:C.gold }}>{isStudent ? "Student Portal" : "Teacher Portal"}</span>
+          <div style={{ margin:"14px 14px 4px", padding:"8px 12px", background:portalDim, borderRadius:9, border:`1px solid ${portalBorder}`, display:"flex", alignItems:"center", gap:8 }}>
+            <span style={{ fontSize:16 }}>{portalIcon}</span>
+            <span style={{ fontSize:12, fontWeight:500, color:portalColor }}>{portalLabel}</span>
           </div>
 
           <div style={{ padding:"10px 12px", flex:1, overflowY:"auto" }}>
-            {["Overview", isStudent?"Academic":"Manage", "Account"].map(section => {
+            {["Overview", isStudent?"Academic": isAdmin?"Manage":"Manage", "Account"].map(section => {
               const items = navItems.filter(n=>n.section===section);
               if (!items.length) return null;
               return (
@@ -991,6 +1284,8 @@ export default function Dashboard({ role="student", user=null, onLogout }) {
               <p style={{ fontSize:12.5, color:C.textMuted, marginTop:2 }}>
                 {isStudent
                   ? `${semester || ""} · ${user?.year || ""} · ${user?.department || "CSE"}`
+                  : isAdmin
+                  ? `System Administrator · EduTrack`
                   : `Academic Year 2025–26 · ${user?.department || "Computer Science"}`}
               </p>
             </div>
@@ -1003,8 +1298,8 @@ export default function Dashboard({ role="student", user=null, onLogout }) {
               </div>
               {/* Theme Toggle */}
               <ThemeToggle/>
-              <div style={{ padding:"6px 14px", borderRadius:9, background:isStudent?C.tealDim:C.goldDim, border:`1px solid ${isStudent?C.tealDim:C.goldMid}`, fontSize:12, fontWeight:500, color:isStudent?C.teal:C.gold, fontFamily:mono }}>
-                {isStudent ? (semester || user?.year || "Sem") : "AY 25–26"}
+              <div style={{ padding:"6px 14px", borderRadius:9, background:portalDim, border:`1px solid ${portalBorder}`, fontSize:12, fontWeight:500, color:portalColor, fontFamily:mono }}>
+                {badgeLabel}
               </div>
             </div>
           </div>

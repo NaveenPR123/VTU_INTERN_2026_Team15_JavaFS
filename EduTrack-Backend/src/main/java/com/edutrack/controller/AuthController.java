@@ -49,7 +49,28 @@ public class AuthController {
         return ResponseEntity.ok(authService.loginTeacher(body.get("email"), body.get("password")));
     }
 
-    // ── Change Password (Student) ─────────────────────────────
+    // ── Admin Login ───────────────────────────────────────────
+    @PostMapping("/login/admin")
+    public ResponseEntity<Map<String, Object>> loginAdmin(@RequestBody Map<String, String> body) {
+        return ResponseEntity.ok(authService.loginAdmin(body.get("email"), body.get("password")));
+    }
+
+    // ── Change Password (Admin) ───────────────────────────────
+    // Body: { id, currentPassword, newPassword }
+    @PostMapping("/change-password/admin")
+    public ResponseEntity<Map<String, Object>> changeAdminPassword(@RequestBody Map<String, Object> body) {
+        try {
+            if (body.get("id") == null || body.get("currentPassword") == null || body.get("newPassword") == null) {
+                return ResponseEntity.ok(Map.of("success", false, "message", "id, currentPassword and newPassword are required"));
+            }
+            Integer id = Integer.valueOf(body.get("id").toString());
+            return ResponseEntity.ok(authService.changeAdminPassword(id,
+                    body.get("currentPassword").toString(),
+                    body.get("newPassword").toString()));
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of("success", false, "message", "Error: " + e.getMessage()));
+        }
+    }
     // Body: { id, currentPassword, newPassword }
     @PostMapping("/change-password/student")
     public ResponseEntity<Map<String, Object>> changeStudentPassword(@RequestBody Map<String, Object> body) {
