@@ -20,22 +20,17 @@ import java.util.Map;
 // ══════════════════════════════════════════════════════════════
 @RestController
 @RequestMapping("/api/courses")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = {"http://localhost:3000","http://localhost:3006","http://localhost:5500"})
 class CourseController {
 
     @Autowired private CourseRepository courseRepo;
-    @Autowired private TeacherRepository teacherRepo;
 
     @GetMapping
-    public List<Course> getAllCourses() {
-        return courseRepo.findAll();
-    }
+    public List<Course> getAllCourses() { return courseRepo.findAll(); }
 
     @GetMapping("/{id}")
     public ResponseEntity<Course> getCourseById(@PathVariable Integer id) {
-        return courseRepo.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return courseRepo.findById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/teacher/{teacherId}")
@@ -66,15 +61,15 @@ class CourseController {
 
 // ══════════════════════════════════════════════════════════════
 //  ATTENDANCE CONTROLLER
-//  GET  /api/attendance/student/{id}              → By student
-//  GET  /api/attendance/course/{id}               → By course
-//  GET  /api/attendance/student/{sId}/course/{cId}→ Student + Course
-//  POST /api/attendance                           → Mark attendance (Teacher)
-//  DELETE /api/attendance/{id}                    → Delete record
+//  GET    /api/attendance/student/{id}               → By student
+//  GET    /api/attendance/course/{id}                → By course
+//  GET    /api/attendance/student/{sId}/course/{cId} → Student + Course
+//  POST   /api/attendance                            → Mark attendance
+//  DELETE /api/attendance/{id}                       → Delete record
 // ══════════════════════════════════════════════════════════════
 @RestController
 @RequestMapping("/api/attendance")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = {"http://localhost:3000","http://localhost:3006","http://localhost:5500"})
 class AttendanceController {
 
     @Autowired private AttendanceRepository attendanceRepo;
@@ -91,8 +86,7 @@ class AttendanceController {
 
     @GetMapping("/student/{studentId}/course/{courseId}")
     public List<Attendance> getByStudentAndCourse(
-            @PathVariable Integer studentId,
-            @PathVariable Integer courseId) {
+            @PathVariable Integer studentId, @PathVariable Integer courseId) {
         return attendanceRepo.findByStudent_StudentIdAndCourse_CourseId(studentId, courseId);
     }
 
@@ -110,30 +104,26 @@ class AttendanceController {
 
 // ══════════════════════════════════════════════════════════════
 //  ASSIGNMENT CONTROLLER
-//  GET    /api/assignments             → All assignments
-//  GET    /api/assignments/{id}        → By ID
-//  GET    /api/assignments/course/{id} → By course
-//  POST   /api/assignments             → Create (Teacher)
-//  PUT    /api/assignments/{id}        → Update (Teacher)
-//  DELETE /api/assignments/{id}        → Delete (Teacher)
+//  GET    /api/assignments              → All assignments
+//  GET    /api/assignments/{id}         → By ID
+//  GET    /api/assignments/course/{id}  → By course
+//  POST   /api/assignments              → Create (Teacher)
+//  PUT    /api/assignments/{id}         → Update (Teacher)
+//  DELETE /api/assignments/{id}         → Delete (Teacher)
 // ══════════════════════════════════════════════════════════════
 @RestController
 @RequestMapping("/api/assignments")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = {"http://localhost:3000","http://localhost:3006","http://localhost:5500"})
 class AssignmentController {
 
     @Autowired private AssignmentRepository assignmentRepo;
 
     @GetMapping
-    public List<Assignment> getAll() {
-        return assignmentRepo.findAll();
-    }
+    public List<Assignment> getAll() { return assignmentRepo.findAll(); }
 
     @GetMapping("/{id}")
     public ResponseEntity<Assignment> getById(@PathVariable Integer id) {
-        return assignmentRepo.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return assignmentRepo.findById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/course/{courseId}")
@@ -165,15 +155,15 @@ class AssignmentController {
 
 // ══════════════════════════════════════════════════════════════
 //  MARKS CONTROLLER
-//  GET  /api/marks/student/{id} → Marks by student
-//  GET  /api/marks/course/{id}  → Marks by course
-//  POST /api/marks              → Enter marks (Teacher)
-//  PUT  /api/marks/{id}         → Update marks (Teacher)
-//  DELETE /api/marks/{id}       → Delete marks
+//  GET    /api/marks/student/{id} → Marks by student
+//  GET    /api/marks/course/{id}  → Marks by course
+//  POST   /api/marks              → Enter marks (auto grade)
+//  PUT    /api/marks/{id}         → Update marks
+//  DELETE /api/marks/{id}         → Delete marks
 // ══════════════════════════════════════════════════════════════
 @RestController
 @RequestMapping("/api/marks")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = {"http://localhost:3000","http://localhost:3006","http://localhost:5500"})
 class MarksController {
 
     @Autowired private MarksRepository marksRepo;
@@ -190,10 +180,8 @@ class MarksController {
 
     @PostMapping
     public ResponseEntity<Marks> enterMarks(@RequestBody Marks marks) {
-        // Auto calculate grade
         int score = marks.getMarks();
-        String grade = score>=90?"O" : score>=80?"A+" : score>=70?"A" : score>=60?"B+" : "B";
-        marks.setGrade(grade);
+        marks.setGrade(score>=90?"O" : score>=80?"A+" : score>=70?"A" : score>=60?"B+" : "B");
         return ResponseEntity.ok(marksRepo.save(marks));
     }
 
@@ -216,9 +204,11 @@ class MarksController {
 
 // ══════════════════════════════════════════════════════════════
 //  STUDENT CONTROLLER
-//  GET  /api/students              → All students
-//  GET  /api/students/{id}         → Student by ID
-//  POST /api/students/{id}/change-password → Change password (Settings)
+//  GET    /api/students              → All students
+//  GET    /api/students/{id}         → Student by ID
+//  PUT    /api/students/{id}         → Update student profile
+//  DELETE /api/students/{id}         → Delete student (Admin)
+//  POST   /api/students/{id}/change-password → Change password
 // ══════════════════════════════════════════════════════════════
 @RestController
 @RequestMapping("/api/students")
@@ -229,36 +219,47 @@ class StudentController {
     @Autowired private AuthService authService;
 
     @GetMapping
-    public List<Student> getAll() {
-        return studentRepo.findAll();
-    }
+    public List<Student> getAll() { return studentRepo.findAll(); }
 
     @GetMapping("/{id}")
     public ResponseEntity<Student> getById(@PathVariable Integer id) {
-        return studentRepo.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return studentRepo.findById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Student> update(@PathVariable Integer id, @RequestBody Student updated) {
+        return studentRepo.findById(id).map(s -> {
+            if (updated.getName()       != null) s.setName(updated.getName());
+            if (updated.getPhone()      != null) s.setPhone(updated.getPhone());
+            if (updated.getDepartment() != null) s.setDepartment(updated.getDepartment());
+            if (updated.getYear()       != null) s.setYear(updated.getYear());
+            return ResponseEntity.ok(studentRepo.save(s));
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> delete(@PathVariable Integer id) {
+        if (!studentRepo.existsById(id)) return ResponseEntity.notFound().build();
+        studentRepo.deleteById(id);
+        return ResponseEntity.ok("Student deleted");
     }
 
     @PostMapping("/{id}/change-password")
     public ResponseEntity<Map<String, Object>> changePassword(
-            @PathVariable Integer id,
-            @RequestBody Map<String, String> body) {
-        String currentPassword = body.get("currentPassword");
-        String newPassword = body.get("newPassword");
-        if (currentPassword == null || newPassword == null) {
+            @PathVariable Integer id, @RequestBody Map<String, String> body) {
+        if (body.get("currentPassword") == null || body.get("newPassword") == null)
             return ResponseEntity.ok(Map.of("success", false, "message", "currentPassword and newPassword are required"));
-        }
-        Map<String, Object> result = authService.changeStudentPassword(id, currentPassword, newPassword);
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(authService.changeStudentPassword(id, body.get("currentPassword"), body.get("newPassword")));
     }
 }
 
 // ══════════════════════════════════════════════════════════════
 //  TEACHER CONTROLLER
-//  GET  /api/teachers              → All teachers
-//  GET  /api/teachers/{id}         → Teacher by ID
-//  POST /api/teachers/{id}/change-password → Change password (Settings)
+//  GET    /api/teachers              → All teachers
+//  GET    /api/teachers/{id}         → Teacher by ID
+//  PUT    /api/teachers/{id}         → Update teacher profile
+//  DELETE /api/teachers/{id}         → Delete teacher (Admin)
+//  POST   /api/teachers/{id}/change-password → Change password
 // ══════════════════════════════════════════════════════════════
 @RestController
 @RequestMapping("/api/teachers")
@@ -269,27 +270,34 @@ class TeacherController {
     @Autowired private AuthService authService;
 
     @GetMapping
-    public List<Teacher> getAll() {
-        return teacherRepo.findAll();
-    }
+    public List<Teacher> getAll() { return teacherRepo.findAll(); }
 
     @GetMapping("/{id}")
     public ResponseEntity<Teacher> getById(@PathVariable Integer id) {
-        return teacherRepo.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return teacherRepo.findById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Teacher> update(@PathVariable Integer id, @RequestBody Teacher updated) {
+        return teacherRepo.findById(id).map(t -> {
+            if (updated.getName()       != null) t.setName(updated.getName());
+            if (updated.getDepartment() != null) t.setDepartment(updated.getDepartment());
+            return ResponseEntity.ok(teacherRepo.save(t));
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> delete(@PathVariable Integer id) {
+        if (!teacherRepo.existsById(id)) return ResponseEntity.notFound().build();
+        teacherRepo.deleteById(id);
+        return ResponseEntity.ok("Teacher deleted");
     }
 
     @PostMapping("/{id}/change-password")
     public ResponseEntity<Map<String, Object>> changePassword(
-            @PathVariable Integer id,
-            @RequestBody Map<String, String> body) {
-        String currentPassword = body.get("currentPassword");
-        String newPassword = body.get("newPassword");
-        if (currentPassword == null || newPassword == null) {
+            @PathVariable Integer id, @RequestBody Map<String, String> body) {
+        if (body.get("currentPassword") == null || body.get("newPassword") == null)
             return ResponseEntity.ok(Map.of("success", false, "message", "currentPassword and newPassword are required"));
-        }
-        Map<String, Object> result = authService.changeTeacherPassword(id, currentPassword, newPassword);
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(authService.changeTeacherPassword(id, body.get("currentPassword"), body.get("newPassword")));
     }
 }

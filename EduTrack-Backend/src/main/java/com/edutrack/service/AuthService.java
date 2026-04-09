@@ -1,7 +1,9 @@
 package com.edutrack.service;
 
+import com.edutrack.entity.Admin;
 import com.edutrack.entity.Student;
 import com.edutrack.entity.Teacher;
+import com.edutrack.repository.AdminRepository;
 import com.edutrack.repository.StudentRepository;
 import com.edutrack.repository.TeacherRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +20,7 @@ public class AuthService {
     @Autowired private OtpService otpService;
     @Autowired private StudentRepository studentRepo;
     @Autowired private TeacherRepository teacherRepo;
+    @Autowired private AdminRepository adminRepo;
 
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
@@ -173,5 +176,45 @@ public class AuthService {
         teacherRepo.save(teacher);
         System.out.println("[AUTH] Teacher password reset successfully for: " + email);
         return true;
+    }
+
+    public Map<String, Object> loginAdmin(String email, String password) {
+        Map<String, Object> response = new HashMap<>();
+        Optional<Admin> opt = adminRepo.findByEmail(email);
+        if (opt.isEmpty() || !encoder.matches(password, opt.get().getPassword())) {
+            response.put("success", false);
+            response.put("message", "Invalid email or password");
+            return response;
+        }
+        Admin a = opt.get();
+        response.put("success", true);
+        response.put("message", "Login successful");
+        response.put("adminId", a.getAdminId());
+        response.put("name", a.getName());
+        response.put("email", a.getEmail());
+        response.put("role", "admin");
+        return response;
+    }
+
+    @Transactional
+    public Map<String, Object> changeAdminPassword(Integer adminId, String currentPassword, String newPassword) {
+        Map<String, Object> response = new HashMap<>();
+        Optional<Admin> opt = adminRepo.findById(adminId);
+        if (opt.isEmpty()) {
+            response.put("success", false);
+            response.put("message", "Admin not found");
+            return response;
+        }
+        Admin admin = opt.get();
+        if (!encoder.matches(currentPassword, admin.getPassword())) {
+            response.put("success", false);
+            response.put("message", "Current password is incorrect");
+            return response;
+        }
+        admin.setPassword(encoder.encode(newPassword));
+        adminRepo.save(admin);
+        response.put("success", true);
+        response.put("message", "Password changed successfully");
+        return response;
     }
 }
