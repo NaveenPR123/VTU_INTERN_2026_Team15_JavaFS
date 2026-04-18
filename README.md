@@ -1,91 +1,32 @@
 # EduTrack — Academic Management Platform
 
-A full-stack academic platform for students, teachers, and admins.
+> A full-stack web application built during the Java Full Stack Internship (2026) by Team 15.
 
-**Stack:** React (frontend) · Spring Boot (backend) · MySQL (database)
-
----
-
-## Prerequisites
-
-Make sure you have these installed:
-- Java 17+
-- Maven
-- Node.js 18+
-- MySQL 8+
+EduTrack is a centralized academic platform connecting students, teachers, and administrators — managing attendance, assignments, marks, course materials, and more in real time.
 
 ---
 
-## Setup — Backend
+## Tech Stack
 
-**1. Clone the repo**
-```bash
-git clone https://github.com/NaveenPR123/VTU_INTERN_2026_Team15_JavaFS.git
-cd VTU_INTERN_2026_Team15_JavaFS
-```
-
-**2. Create the database**
-```sql
-CREATE DATABASE edutrack;
-```
-
-**3. Configure application.properties**
-```bash
-cd EduTrack-Backend/src/main/resources
-cp application.properties.template application.properties
-```
-Open `application.properties` and fill in:
-- `spring.datasource.password` → your MySQL root password
-- `spring.mail.username` → your Gmail address
-- `spring.mail.password` → your Gmail App Password (not your Gmail login password)
-
-> To get a Gmail App Password: Google Account → Security → 2-Step Verification → App Passwords
-
-**4. Run the backend**
-```bash
-cd EduTrack-Backend
-mvn spring-boot:run
-```
-Backend runs on `http://localhost:8080`
-
-Default admin account is created automatically:
-- Email: `admin@edutrack.com`
-- Password: `Admin@123`
+| Layer | Technology |
+|---|---|
+| Frontend | React 19, CSS |
+| Backend | Spring Boot 3, Java 17 |
+| Database | MySQL 8 |
+| Testing | Playwright (E2E) |
+| Auth | BCrypt password hashing, OTP via Gmail SMTP |
 
 ---
 
-## Setup — Frontend
+## Features
 
-**1. Install dependencies**
-```bash
-cd EduTrack-Frontend
-npm install
-```
-
-**2. Start the frontend**
-```bash
-npm start
-```
-Frontend runs on `http://localhost:3000`
-
----
-
-## Running Tests (Playwright)
-
-Make sure both backend and frontend are running, then:
-
-```bash
-cd EduTrack-Frontend
-
-# First time only — install browser
-npx playwright install chromium
-
-# Run all tests
-npx playwright test
-
-# View HTML report
-npx playwright show-report
-```
+- **Admin Portal** — manage students, teachers, courses, system settings
+- **Teacher Portal** — mark attendance, enter marks, manage assignments & materials
+- **Student Portal** — view courses, attendance, marks, assignments
+- **Forgot Password** — OTP-based reset via email (role-validated)
+- **Maintenance Mode** — admin can lock the platform
+- **Bulk Import** — CSV upload for students and teachers
+- **43 Playwright E2E tests** covering all major flows
 
 ---
 
@@ -93,8 +34,114 @@ npx playwright show-report
 
 ```
 EduTrack/
-├── EduTrack-Backend/     # Spring Boot REST API
-├── EduTrack-Frontend/    # React app
-│   └── tests/e2e/        # Playwright tests
-└── EduTrack-Database/    # SQL schema
+├── EduTrack-Backend/        # Spring Boot REST API (port 8080)
+├── EduTrack-Frontend/       # React app (port 3000)
+│   └── tests/e2e/           # Playwright test suite
+├── EduTrack-Database/       # MySQL schema
+└── docs/                    # Screenshots & design documents
 ```
+
+---
+
+## Getting Started
+
+### Prerequisites
+- Java 17+
+- Maven 3.8+
+- Node.js 18+
+- MySQL 8+
+
+---
+
+### 1. Database Setup
+
+```sql
+CREATE DATABASE edutrack;
+```
+
+Then import the schema:
+```bash
+mysql -u root -p edutrack < EduTrack-Database/Schema.sql
+```
+
+---
+
+### 2. Backend Setup
+
+```bash
+cd EduTrack-Backend/src/main/resources
+cp application.properties.template application.properties
+```
+
+Edit `application.properties` and fill in:
+```properties
+spring.datasource.password=YOUR_MYSQL_PASSWORD
+spring.mail.username=YOUR_GMAIL@gmail.com
+spring.mail.password=YOUR_GMAIL_APP_PASSWORD
+```
+
+> Gmail App Password: Google Account → Security → 2-Step Verification → App Passwords
+
+```bash
+cd EduTrack-Backend
+mvn spring-boot:run
+```
+
+Backend runs at `http://localhost:8080`
+
+**Default admin credentials (auto-created on first run):**
+- Email: `admin@edutrack.com`
+- Password: `Admin@123`
+
+---
+
+### 3. Frontend Setup
+
+```bash
+cd EduTrack-Frontend
+npm install
+npm start
+```
+
+Frontend runs at `http://localhost:3000`
+
+---
+
+### 4. Running Tests
+
+Ensure both backend and frontend are running, then:
+
+```bash
+cd EduTrack-Frontend
+npx playwright install chromium   # first time only
+npx playwright test               # run all 43 tests
+npx playwright show-report        # view HTML report
+```
+
+---
+
+## API Overview
+
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/api/auth/login/admin` | Admin login |
+| POST | `/api/auth/login/student` | Student login |
+| POST | `/api/auth/login/teacher` | Teacher login |
+| POST | `/api/otp/forgot-password` | Send OTP (role-validated) |
+| GET | `/api/students` | List all students |
+| GET | `/api/teachers` | List all teachers |
+| GET | `/api/courses` | List all courses |
+| GET | `/api/system/settings` | System settings |
+
+---
+
+## Team
+
+**VTU Internship 2026 — Team 15**  
+Java Full Stack Track
+
+---
+
+## License
+
+MIT
