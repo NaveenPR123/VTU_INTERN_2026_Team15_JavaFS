@@ -103,4 +103,17 @@ public class AuthController {
             return ResponseEntity.ok(Map.of("success", false, "message", "Error: " + e.getMessage()));
         }
     }
+
+    // ── Admin: Add Student (bypasses registrationOpen) ───────
+    @PostMapping("/admin/add-student")
+    public ResponseEntity<Map<String, Object>> adminAddStudent(@RequestBody Student student) {
+        return ResponseEntity.ok(authService.adminRegisterStudent(student));
+    }
+
+    // ── Admin: Add Teacher (bypasses registrationOpen) ───────
+    @PostMapping("/admin/add-teacher")
+    public ResponseEntity<Map<String, Object>> adminAddTeacher(@RequestBody Teacher teacher) {
+        return ResponseEntity.ok(authService.adminRegisterTeacher(teacher));
+    }
+
 }

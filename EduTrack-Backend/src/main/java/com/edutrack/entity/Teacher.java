@@ -4,8 +4,9 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-// SDD DB: teacher_id, name, email, password, department
+// SDD DB: teacher_id, name, email, password, department, phone, employee_id
 
 @Entity
 @Table(name = "teachers")
@@ -24,9 +25,19 @@ public class Teacher {
     @Column(nullable = false, unique = true)
     private String email;
 
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Column(nullable = false)
     private String password;
 
     @Column(nullable = false)
     private String department;
+
+    private String phone;
+
+    @Column(unique = true)
+    private String employeeId;
+
+    @Column(nullable = false)
+    private String status = "Active"; // "Active", "Suspended"
+
 }

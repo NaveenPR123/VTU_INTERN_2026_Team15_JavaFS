@@ -24,4 +24,5 @@ public class Admin {
 
     @Column(nullable = false)
     private String password;
+
 }

@@ -4,6 +4,7 @@ import com.edutrack.entity.OtpVerification;
 import com.edutrack.repository.OtpRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -14,6 +15,7 @@ public class OtpService {
     @Autowired private OtpRepository otpRepo;
     @Autowired private EmailService   emailService;
 
+    @Transactional
     public String generateAndSendOtp(String email) {
         String otp = String.valueOf(new SecureRandom().nextInt(900000) + 100000);
         otpRepo.deleteByEmail(email);
@@ -24,10 +26,36 @@ public class OtpService {
         otpEntity.setExpiryTime(LocalDateTime.now().plusMinutes(10));
         otpEntity.setUsed(false);
         otpRepo.save(otpEntity);
+        otpRepo.flush(); // ensure saved before email
 
-        emailService.sendOtpEmail(email, otp);
+        try {
+            emailService.sendOtpEmail(email, otp);
+        } catch (Exception e) {
+            System.out.println("[OTP] Email send failed (OTP still saved): " + e.getMessage());
+        }
         System.out.println("[OTP] Generated OTP for " + email + " → " + otp);
         return otp;
+    }
+
+    @Transactional
+    public void sendPasswordResetOtp(String email) {
+        String otp = String.valueOf(new SecureRandom().nextInt(900000) + 100000);
+        otpRepo.deleteByEmail(email);
+
+        OtpVerification otpEntity = new OtpVerification();
+        otpEntity.setEmail(email);
+        otpEntity.setOtp(otp);
+        otpEntity.setExpiryTime(LocalDateTime.now().plusMinutes(10));
+        otpEntity.setUsed(false);
+        otpRepo.save(otpEntity);
+        otpRepo.flush(); // ensure saved before email
+
+        try {
+            emailService.sendPasswordResetEmail(email, otp);
+        } catch (Exception e) {
+            System.out.println("[OTP] Email send failed (OTP still saved): " + e.getMessage());
+        }
+        System.out.println("[OTP] Password reset OTP for " + email + " → " + otp);
     }
 
     public boolean validateOtp(String email, String otp) {
@@ -39,7 +67,16 @@ public class OtpService {
         }
 
         OtpVerification otpEntity = opt.get();
-        System.out.println("[OTP] Found OTP for " + email + " | stored=" + otpEntity.getOtp() + " | provided=" + otp + " | used=" + otpEntity.isUsed() + " | expiry=" + otpEntity.getExpiryTime());
+        System.out.println("[OTP] Validating for " + email
+            + " | stored=" + otpEntity.getOtp()
+            + " | provided=" + otp
+            + " | used=" + otpEntity.isUsed()
+            + " | expiry=" + otpEntity.getExpiryTime());
+
+        if (otpEntity.isUsed()) {
+            System.out.println("[OTP] OTP already used for: " + email);
+            return false;
+        }
 
         if (otpEntity.getExpiryTime().isBefore(LocalDateTime.now())) {
             System.out.println("[OTP] OTP expired for: " + email);
@@ -55,20 +92,5 @@ public class OtpService {
         otpRepo.save(otpEntity);
         System.out.println("[OTP] OTP validated successfully for: " + email);
         return true;
-    }
-
-    public void sendPasswordResetOtp(String email) {
-        String otp = String.valueOf(new SecureRandom().nextInt(900000) + 100000);
-        otpRepo.deleteByEmail(email);
-
-        OtpVerification otpEntity = new OtpVerification();
-        otpEntity.setEmail(email);
-        otpEntity.setOtp(otp);
-        otpEntity.setExpiryTime(LocalDateTime.now().plusMinutes(10));
-        otpEntity.setUsed(false);
-        otpRepo.save(otpEntity);
-
-        emailService.sendPasswordResetEmail(email, otp);
-        System.out.println("[OTP] Password reset OTP for " + email + " → " + otp);
     }
 }

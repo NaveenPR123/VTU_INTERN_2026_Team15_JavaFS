@@ -101,12 +101,12 @@ CREATE TABLE otp_verification (
 
 -- ── Teachers (password: Test@123) ────────────────────────────
 INSERT INTO teachers (name, email, password, department) VALUES
-('Prof. R. Sharma',  'sharma@college.edu',   '$2a$10$8K1p/a0dR1xqM2LfU7bvdOWrX9Z1mN3kP5qY7tH2jL4nM6oQ8sV0e', 'Computer Science'),
-('Prof. K. Menon',   'menon@college.edu',    '$2a$10$8K1p/a0dR1xqM2LfU7bvdOWrX9Z1mN3kP5qY7tH2jL4nM6oQ8sV0e', 'Computer Science'),
+('Prof. R. Sharma',  'sharma@college.edu',   '$2a$10$8K1p/a0dR1xqM2LfU7bvdOWrX9Z1mN3kP5qY7tH2jL4nM6oQ8sV0e', 'Computer Science and Engineering'),
+('Prof. K. Menon',   'menon@college.edu',    '$2a$10$8K1p/a0dR1xqM2LfU7bvdOWrX9Z1mN3kP5qY7tH2jL4nM6oQ8sV0e', 'Computer Science and Engineering'),
 ('Prof. A. Iyer',    'iyer@college.edu',     '$2a$10$8K1p/a0dR1xqM2LfU7bvdOWrX9Z1mN3kP5qY7tH2jL4nM6oQ8sV0e', 'Mathematics'),
-('Dr. S. Nair',      'nair@college.edu',     '$2a$10$8K1p/a0dR1xqM2LfU7bvdOWrX9Z1mN3kP5qY7tH2jL4nM6oQ8sV0e', 'Computer Science'),
-('Prof. P. Reddy',   'reddy@college.edu',    '$2a$10$8K1p/a0dR1xqM2LfU7bvdOWrX9Z1mN3kP5qY7tH2jL4nM6oQ8sV0e', 'Computer Science'),
-('Dr. M. Krishnan',  'krishnan@college.edu', '$2a$10$8K1p/a0dR1xqM2LfU7bvdOWrX9Z1mN3kP5qY7tH2jL4nM6oQ8sV0e', 'Computer Science');
+('Dr. S. Nair',      'nair@college.edu',     '$2a$10$8K1p/a0dR1xqM2LfU7bvdOWrX9Z1mN3kP5qY7tH2jL4nM6oQ8sV0e', 'Computer Science and Engineering'),
+('Prof. P. Reddy',   'reddy@college.edu',    '$2a$10$8K1p/a0dR1xqM2LfU7bvdOWrX9Z1mN3kP5qY7tH2jL4nM6oQ8sV0e', 'Computer Science and Engineering'),
+('Dr. M. Krishnan',  'krishnan@college.edu', '$2a$10$8K1p/a0dR1xqM2LfU7bvdOWrX9Z1mN3kP5qY7tH2jL4nM6oQ8sV0e', 'Computer Science and Engineering');
 
 -- ── Courses ──────────────────────────────────────────────────
 INSERT INTO courses (course_name, credits, teacher_id) VALUES
@@ -119,12 +119,12 @@ INSERT INTO courses (course_name, credits, teacher_id) VALUES
 
 -- ── Students (password: Test@123) ────────────────────────────
 INSERT INTO students (name, email, password, phone, department, year) VALUES
-('Arjun Kumar',   'arjun@college.edu',  '$2a$10$8K1p/a0dR1xqM2LfU7bvdOWrX9Z1mN3kP5qY7tH2jL4nM6oQ8sV0e', '9876543210', 'Computer Science', '3rd Year'),
-('Priya Sharma',  'priya@college.edu',  '$2a$10$8K1p/a0dR1xqM2LfU7bvdOWrX9Z1mN3kP5qY7tH2jL4nM6oQ8sV0e', '9876543211', 'Computer Science', '3rd Year'),
-('Ravi Teja',     'ravi@college.edu',   '$2a$10$8K1p/a0dR1xqM2LfU7bvdOWrX9Z1mN3kP5qY7tH2jL4nM6oQ8sV0e', '9876543212', 'Computer Science', '3rd Year'),
-('Sneha Reddy',   'sneha@college.edu',  '$2a$10$8K1p/a0dR1xqM2LfU7bvdOWrX9Z1mN3kP5qY7tH2jL4nM6oQ8sV0e', '9876543213', 'Computer Science', '3rd Year'),
-('Kiran Menon',   'kiran@college.edu',  '$2a$10$8K1p/a0dR1xqM2LfU7bvdOWrX9Z1mN3kP5qY7tH2jL4nM6oQ8sV0e', '9876543214', 'Computer Science', '3rd Year'),
-('Divya Iyer',    'divya@college.edu',  '$2a$10$8K1p/a0dR1xqM2LfU7bvdOWrX9Z1mN3kP5qY7tH2jL4nM6oQ8sV0e', '9876543215', 'Computer Science', '3rd Year'),
+('Arjun Kumar',   'arjun@college.edu',  '$2a$10$8K1p/a0dR1xqM2LfU7bvdOWrX9Z1mN3kP5qY7tH2jL4nM6oQ8sV0e', '9876543210', 'Computer Science and Engineering', '3rd Year'),
+('Priya Sharma',  'priya@college.edu',  '$2a$10$8K1p/a0dR1xqM2LfU7bvdOWrX9Z1mN3kP5qY7tH2jL4nM6oQ8sV0e', '9876543211', 'Computer Science and Engineering', '3rd Year'),
+('Ravi Teja',     'ravi@college.edu',   '$2a$10$8K1p/a0dR1xqM2LfU7bvdOWrX9Z1mN3kP5qY7tH2jL4nM6oQ8sV0e', '9876543212', 'Computer Science and Engineering', '3rd Year'),
+('Sneha Reddy',   'sneha@college.edu',  '$2a$10$8K1p/a0dR1xqM2LfU7bvdOWrX9Z1mN3kP5qY7tH2jL4nM6oQ8sV0e', '9876543213', 'Computer Science and Engineering', '3rd Year'),
+('Kiran Menon',   'kiran@college.edu',  '$2a$10$8K1p/a0dR1xqM2LfU7bvdOWrX9Z1mN3kP5qY7tH2jL4nM6oQ8sV0e', '9876543214', 'Computer Science and Engineering', '3rd Year'),
+('Divya Iyer',    'divya@college.edu',  '$2a$10$8K1p/a0dR1xqM2LfU7bvdOWrX9Z1mN3kP5qY7tH2jL4nM6oQ8sV0e', '9876543215', 'Computer Science and Engineering', '3rd Year'),
 ('Rahul Verma',   'rahul@college.edu',  '$2a$10$8K1p/a0dR1xqM2LfU7bvdOWrX9Z1mN3kP5qY7tH2jL4nM6oQ8sV0e', '9876543216', 'Information Science','2nd Year'),
 ('Anjali Singh',  'anjali@college.edu', '$2a$10$8K1p/a0dR1xqM2LfU7bvdOWrX9Z1mN3kP5qY7tH2jL4nM6oQ8sV0e', '9876543217', 'Information Science','2nd Year');
 

@@ -1,59 +1,71 @@
-// ── EduTrack Theme System ──────────────────────────────────
-// Supports Dark (night) and Light (day) themes
+// ── EduTrack Premium Theme System ─────────────────────────
+// DARK: Deep navy-charcoal  |  LIGHT: Rich warm-slate with vibrancy
 
 export const DARK = {
-  bg:        "#0d1117",
-  surface:   "#161b25",
-  surface2:  "#1e2535",
-  surface3:  "#242d3d",
-  border:    "rgba(255,255,255,0.06)",
-  gold:      "#e8b96a",
-  goldDim:   "rgba(232,185,106,0.12)",
-  goldMid:   "rgba(232,185,106,0.3)",
-  teal:      "#4ecdc4",
-  tealDim:   "rgba(78,205,196,0.1)",
-  rose:      "#f87171",
-  roseDim:   "rgba(248,113,113,0.1)",
-  purple:    "#a78bfa",
-  purpleDim: "rgba(167,139,250,0.1)",
+  bg:        "#080c14",
+  surface:   "#0f1520",
+  surface2:  "#151d2e",
+  surface3:  "#1c2640",
+  border:    "rgba(148,163,184,0.09)",
+  cardShadow: "0 16px 48px rgba(0,0,0,0.5)",
+  cardGlow:   "0 0 0 1px rgba(148,163,184,0.06)",
+  gold:      "#f0c060",
+  goldDim:   "rgba(240,192,96,0.14)",
+  goldMid:   "rgba(240,192,96,0.35)",
+  teal:      "#2dd4bf",
+  tealDim:   "rgba(45,212,191,0.13)",
+  rose:      "#fb7185",
+  roseDim:   "rgba(251,113,133,0.13)",
+  purple:    "#c084fc",
+  purpleDim: "rgba(192,132,252,0.13)",
   blue:      "#60a5fa",
-  blueDim:   "rgba(96,165,250,0.1)",
-  green:     "#34d399",
-  greenDim:  "rgba(52,211,153,0.1)",
-  text:      "#e8e6e1",
-  textMuted: "#7a8099",
-  textDim:   "#4a5068",
+  blueDim:   "rgba(96,165,250,0.13)",
+  green:     "#4ade80",
+  greenDim:  "rgba(74,222,128,0.13)",
+  amber:     "#fbbf24",
+  amberDim:  "rgba(251,191,36,0.14)",
+  text:      "#e2e8f0",
+  textMuted: "#7d8fa8",
+  textDim:   "#4a5568",
 };
 
 export const LIGHT = {
-  bg:        "#f5f3ef",
+  // Warm off-white backgrounds — not plain grey, slight warm tint
+  bg:        "#f4f6fb",
   surface:   "#ffffff",
-  surface2:  "#f0ede8",
-  surface3:  "#e8e4de",
-  border:    "rgba(0,0,0,0.08)",
-  gold:      "#b8860b",
-  goldDim:   "rgba(184,134,11,0.1)",
-  goldMid:   "rgba(184,134,11,0.3)",
+  surface2:  "#eef1f8",
+  surface3:  "#e3e8f4",
+  border:    "rgba(99,115,155,0.13)",
+  cardShadow: "0 8px 32px rgba(30,41,80,0.09), 0 2px 8px rgba(30,41,80,0.05)",
+  cardGlow:   "0 0 0 1px rgba(99,115,155,0.08)",
+
+  // Vibrant accent colors (darker/richer for light bg readability)
+  gold:      "#c97c10",
+  goldDim:   "rgba(201,124,16,0.10)",
+  goldMid:   "rgba(201,124,16,0.25)",
   teal:      "#0d9488",
-  tealDim:   "rgba(13,148,136,0.1)",
-  rose:      "#dc2626",
-  roseDim:   "rgba(220,38,38,0.08)",
+  tealDim:   "rgba(13,148,136,0.10)",
+  rose:      "#e11d48",
+  roseDim:   "rgba(225,29,72,0.08)",
   purple:    "#7c3aed",
-  purpleDim: "rgba(124,58,237,0.08)",
+  purpleDim: "rgba(124,58,237,0.09)",
   blue:      "#2563eb",
-  blueDim:   "rgba(37,99,235,0.08)",
-  green:     "#059669",
-  greenDim:  "rgba(5,150,105,0.08)",
-  text:      "#1a1a2e",
-  textMuted: "#4a5568",
-  textDim:   "#9aa0ab",
+  blueDim:   "rgba(37,99,235,0.09)",
+  green:     "#15803d",
+  greenDim:  "rgba(21,128,61,0.09)",
+  amber:     "#b45309",
+  amberDim:  "rgba(180,83,9,0.09)",
+
+  // Text
+  text:      "#0f172a",
+  textMuted: "#4b5675",
+  textDim:   "#94a3b8",
 };
 
-export const font = "'Playfair Display', serif";
-export const body = "'DM Sans', sans-serif";
-export const mono = "'DM Mono', monospace";
+export const font = "'Plus Jakarta Sans', system-ui, -apple-system, sans-serif";
+export const body = "'Plus Jakarta Sans', system-ui, -apple-system, sans-serif";
+export const mono = "'DM Mono', ui-monospace, monospace";
 
-export const FONTS_IMPORT = `@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');`;
+export const FONTS_IMPORT = `@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap');`;
 
-// Default — dark theme
 export const C = DARK;

@@ -6,10 +6,9 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import java.time.LocalDate;
 
-// SDD DB: attendance_id, student_id (FK), course_id (FK), attendance_date, status
-
 @Entity
-@Table(name = "attendance")
+@Table(name = "attendance",
+    uniqueConstraints = @UniqueConstraint(columnNames = {"student_id","course_id","attendance_date"}))
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
-import Login from "./Login";
-import Signup from "./Signup";
-import ForgotPassword from "./ForgotPassword";
-import Dashboard from "./Dashboard";
-import LandingPage from "./LandingPage";
-import { ThemeProvider } from "./ThemeContext";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
+import ForgotPassword from "./pages/ForgotPassword";
+import Dashboard from "./pages/Dashboard";
+import LandingPage from "./pages/LandingPage";
+import { ThemeProvider } from "./context/ThemeContext";
 
 export default function App() {
   const [page, setPage] = useState("landing");
@@ -48,7 +48,7 @@ export default function App() {
           case "forgot-password":
             return <ForgotPassword onGoBack={() => navigate("login")} />;
           case "dashboard":
-            return <Dashboard role={role} user={user} onLogout={handleLogout} />;
+            return <Dashboard role={role} user={user} setUser={setUser} onLogout={handleLogout} />;
           default:
             return <LandingPage onGoSignin={() => navigate("login")} onGoSignup={() => navigate("signup")} />;
         }

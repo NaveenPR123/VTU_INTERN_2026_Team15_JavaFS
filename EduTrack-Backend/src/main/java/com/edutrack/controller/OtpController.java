@@ -1,5 +1,8 @@
 package com.edutrack.controller;
 
+import com.edutrack.repository.AdminRepository;
+import com.edutrack.repository.StudentRepository;
+import com.edutrack.repository.TeacherRepository;
 import com.edutrack.service.OtpService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +15,9 @@ import java.util.Map;
 public class OtpController {
 
     @Autowired private OtpService otpService;
+    @Autowired private StudentRepository studentRepo;
+    @Autowired private TeacherRepository teacherRepo;
+    @Autowired private AdminRepository   adminRepo;
 
     @PostMapping("/send")
     public ResponseEntity<Map<String, Object>> sendOtp(@RequestBody Map<String, String> body) {
@@ -36,6 +42,19 @@ public class OtpController {
     public ResponseEntity<Map<String, Object>> forgotPassword(@RequestBody Map<String, String> body) {
         try {
             String email = body.get("email");
+            String role  = body.get("role");
+
+            // Verify the email exists for the given role before sending OTP
+            boolean exists = switch (role == null ? "" : role) {
+                case "teacher" -> teacherRepo.existsByEmail(email);
+                case "admin"   -> adminRepo.existsByEmail(email);
+                default        -> studentRepo.existsByEmail(email);
+            };
+
+            if (!exists) {
+                return ResponseEntity.ok(Map.of("success", false, "message", "No account found with this email."));
+            }
+
             otpService.sendPasswordResetOtp(email);
             return ResponseEntity.ok(Map.of("success", true, "message", "Password reset OTP sent to " + email));
         } catch (Exception e) {

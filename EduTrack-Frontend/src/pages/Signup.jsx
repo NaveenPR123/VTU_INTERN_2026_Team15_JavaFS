@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { font, body, FONTS_IMPORT } from "./theme";
-import { useTheme } from "./ThemeContext";
-import ThemeToggle from "./ThemeToggle.jsx";
+import { font, body, FONTS_IMPORT } from "../theme.js";
+import { useTheme } from "../context/ThemeContext";
+import ThemeToggle from "../components/ThemeToggle.jsx";
+import logoSrc from "../assets/edutrack-logo.png";
 
-const STEPS = ["Choose Role", "Your Details", "Set Password", "Verify Email"];
-const DEPARTMENTS = ["Computer Science","Information Science","Electronics","Mechanical","Civil","Electrical","Biotechnology","Chemical"];
+const STEPS = ["Your Details", "Set Password", "Verify Email"];
+const DEPARTMENTS = ["Computer Science and Engineering","Artificial Intelligence and Machine Learning"];
 const YEARS = ["1st Year","2nd Year","3rd Year","4th Year"];
 
 // ── Field — C passed as prop ──
@@ -52,11 +53,11 @@ function SelectField({ label, options, icon, value, onChange, error, C }) {
 }
 
 export default function Signup({ onSignup, onGoLogin }) {
-  const { theme: C } = useTheme();
+  const { theme: C, isDark } = useTheme();
 
   // ── All state inside component ──
   const [step,        setStep]       = useState(0);
-  const [role,        setRole]       = useState("student");
+  const role = "student";
   const [loading,     setLoading]    = useState(false);
   const [errors,      setErrors]     = useState({});
   const [error,       setError]      = useState("");
@@ -67,7 +68,7 @@ export default function Signup({ onSignup, onGoLogin }) {
 
   const [form, setForm] = useState({
     name:"", email:"", password:"", confirm:"",
-    department:"", year:"",
+    department:"", year:"", phone:"", usn:"", employeeId:"", semester:"",
   });
 
   const set = (k) => (e) => setForm(p => ({ ...p, [k]: e.target.value }));
@@ -75,18 +76,21 @@ export default function Signup({ onSignup, onGoLogin }) {
   // ── Validation ──
   const validate = () => {
     const e = {};
-    if (step === 1) {
+    if (step === 0) {
       if (!form.name.trim())               e.name       = "Full name is required";
       if (!form.email.trim())              e.email      = "Email address is required";
       if (!form.department)               e.department = "Department is required";
       if (role==="student" && !form.year) e.year       = "Year of study is required";
+      if (role==="student" && !form.usn.trim())        e.usn        = "USN is required";
+      if (role==="student" && !form.semester)           e.semester   = "Semester is required";
+      if (!form.phone.trim())                           e.phone      = "Phone number is required";
     }
-    if (step === 2) {
+    if (step === 1) {
       if (!form.password)                  e.password = "Password is required";
       if (form.password.length < 6)        e.password = "Minimum 6 characters";
       if (form.password !== form.confirm)  e.confirm  = "Passwords do not match";
     }
-    if (step === 3) {
+    if (step === 2) {
       if (!otp.trim() || otp.length !== 6) e.otp = "Please enter the 6-digit OTP";
     }
     setErrors(e);
@@ -98,7 +102,7 @@ export default function Signup({ onSignup, onGoLogin }) {
     setOtpSending(true);
     setError("");
     try {
-      const res = await fetch("http://localhost:8080/api/otp/send", {
+      const res = await fetch(`${process.env.REACT_APP_API_URL || "http://localhost:8080"}/api/otp/send`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: form.email })
@@ -119,12 +123,12 @@ export default function Signup({ onSignup, onGoLogin }) {
   // ── Next button — sends OTP when moving from step 2 → step 3 ──
   const next = async () => {
     if (!validate()) return;
-    if (step === 2) {
-      // Send OTP before showing step 3
+    if (step === 1) {
+      // Send OTP before showing step 2 (Verify Email)
       setOtpSending(true);
       setError("");
       try {
-        const res = await fetch("http://localhost:8080/api/otp/send", {
+        const res = await fetch(`${process.env.REACT_APP_API_URL || "http://localhost:8080"}/api/otp/send`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email: form.email })
@@ -151,12 +155,21 @@ export default function Signup({ onSignup, onGoLogin }) {
   // ── Final submit — verify OTP then register ──
   const handleSubmit = async (e) => {
     e.preventDefault();
+    // Check if registrations are disabled by admin (from server)
+    try {
+      const res = await fetch(`${process.env.REACT_APP_API_URL || "http://localhost:8080"}/api/system/settings`);
+      const settings = await res.json();
+      if (!settings.registrationOpen) {
+        setError("New registrations are currently disabled. Please contact your administrator.");
+        return;
+      }
+    } catch { /* if server unreachable, allow registration attempt */ }
     if (!validate()) return;
     setLoading(true);
     setError("");
     try {
       // Step 1: Verify OTP
-      const otpRes = await fetch("http://localhost:8080/api/otp/verify", {
+      const otpRes = await fetch(`${process.env.REACT_APP_API_URL || "http://localhost:8080"}/api/otp/verify`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: form.email, otp })
@@ -171,13 +184,12 @@ export default function Signup({ onSignup, onGoLogin }) {
 
       // Step 2: Register account
       const endpoint = role === "student"
-        ? "http://localhost:8080/api/auth/register/student"
-        : "http://localhost:8080/api/auth/register/teacher";
+        ? `${process.env.REACT_APP_API_URL || "http://localhost:8080"}/api/auth/register/student`
+        : `${process.env.REACT_APP_API_URL || "http://localhost:8080"}/api/auth/register/teacher`;
 
       const payload = role === "student"
-        ? { name:form.name, email:form.email, password:form.password, department:form.department, year:form.year }
-        : { name:form.name, email:form.email, password:form.password, department:form.department };
-
+        ? { name:form.name, email:form.email, password:form.password, department:form.department, year:form.year, phone:form.phone, usn:form.usn, semester:form.semester }
+        : { name:form.name, email:form.email, password:form.password, department:form.department, phone:form.phone, employeeId:form.employeeId };
       const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -187,7 +199,7 @@ export default function Signup({ onSignup, onGoLogin }) {
 
       if (data.success) {
         setLoading(false);
-        onSignup(role, data);
+        onSignup("student", data);
       } else {
         setLoading(false);
         setError(data.message || "Registration failed");
@@ -207,13 +219,21 @@ export default function Signup({ onSignup, onGoLogin }) {
         @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
         @keyframes float  { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
         @keyframes pulse  { 0%,100%{opacity:1} 50%{opacity:0.5} }
+        @keyframes spin   { to { transform: rotate(360deg); } }
         .form-card  { animation: fadeUp 0.5s ease both; }
-        .role-card:hover { border-color:${C.goldMid} !important; transform:translateY(-2px); }
-        .next-btn:hover:not(:disabled)  { opacity:0.88; transform:translateY(-1px); }
+        .role-card { transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1) !important; }
+        .role-card:hover { border-color:${C.goldMid} !important; transform:translateY(-2px); box-shadow: 0 8px 24px rgba(232,185,106,0.15) !important; }
+        .next-btn { transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1) !important; }
+        .next-btn:hover:not(:disabled) { transform: translateY(-2px) scale(1.01); box-shadow: 0 12px 32px rgba(232,185,106,0.4) !important; }
+        .next-btn:active:not(:disabled) { transform: translateY(0) scale(0.99); }
         .next-btn:disabled { opacity:0.6; cursor:not-allowed; }
-        .back-btn:hover  { border-color:${C.goldMid} !important; color:${C.text} !important; }
-        .link-txt:hover  { color:${C.gold} !important; }
+        .back-btn { transition: all 0.2s ease !important; }
+        .back-btn:hover  { border-color:${C.goldMid} !important; color:${C.text} !important; background: ${C.surface2} !important; }
+        .link-txt { transition: color 0.2s ease !important; }
+        .link-txt:hover  { color:${C.gold} !important; text-decoration: underline; }
         .otp-input { letter-spacing: 0.3em; font-size:22px !important; text-align:center; font-family:${body}; }
+        div[style*="border-radius:9px"][style*="padding:\"11px 14px\""] { transition: border-color 0.2s, box-shadow 0.2s !important; }
+        div[style*="border-radius:9px"]:focus-within { border-color:${C.gold}80 !important; box-shadow: 0 0 0 3px ${C.gold}18 !important; }
       `}</style>
 
       <div style={{ minHeight:"100vh", display:"flex", background:C.bg, fontFamily:body, position:"relative", overflow:"hidden", transition:"background 0.3s" }}>
@@ -233,50 +253,54 @@ export default function Signup({ onSignup, onGoLogin }) {
           <div style={{ maxWidth:400, width:"100%" }}>
 
             <div style={{ display:"flex", alignItems:"center", gap:14, marginBottom:40 }}>
-              <div style={{ width:48, height:48, borderRadius:12, background:"linear-gradient(135deg,#e8b96a,#c4973a)", display:"flex", alignItems:"center", justifyContent:"center", fontFamily:font, fontWeight:700, fontSize:22, color:"#0d1117", boxShadow:"0 8px 28px rgba(232,185,106,0.4)", animation:"float 4s ease-in-out infinite" }}>E</div>
-              <span style={{ fontFamily:font, fontSize:26, fontWeight:700, color:C.text }}>Edu<span style={{ color:C.gold }}>Track</span></span>
+              <img src={logoSrc} alt="EduTrack" style={{ width:52, height:52, borderRadius:14, boxShadow:"0 10px 32px rgba(232,185,106,0.4)", objectFit:"cover", animation:"float 4s ease-in-out infinite" }}/>
+              <div>
+                <div style={{ fontFamily:font, fontSize:26, fontWeight:700, color:C.text, lineHeight:1 }}>Edu<span style={{ color:C.gold }}>Track</span></div>
+                <div style={{ fontSize:11, color:C.textDim, marginTop:3, fontWeight:500, letterSpacing:"0.05em" }}>Academic Management Platform</div>
+              </div>
             </div>
 
-            <h2 style={{ fontFamily:font, fontSize:28, fontWeight:600, color:C.text, lineHeight:1.3, marginBottom:14 }}>
-              Join EduTrack as a<br/><span style={{ color:C.gold }}>{role==="student"?"Student":"Teacher"}.</span>
+            <h2 style={{ fontFamily:font, fontSize:30, fontWeight:700, color:C.text, lineHeight:1.2, marginBottom:12 }}>
+              Join EduTrack as a<br/>
+              <span style={{ background:`linear-gradient(135deg,#e8b96a 0%,#4ecdc4 100%)`, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text" }}>Student.</span>
             </h2>
-            <p style={{ fontSize:14, color:C.textMuted, lineHeight:1.75, marginBottom:36 }}>
-              {role==="student"
-                ? "Track your courses, attendance, assignments and academic performance all in one place."
-                : "Manage your courses, mark attendance, create assignments and enter student marks efficiently."}
+            <p style={{ fontSize:14, color:C.textMuted, lineHeight:1.8, marginBottom:32 }}>
+              Create your student account to track attendance, submit assignments, view marks, and access course materials — all in one place.
             </p>
 
             {/* Step tracker */}
-            <div style={{ marginBottom:36 }}>
+            <div style={{ marginBottom:32 }}>
               {STEPS.map((s, i) => (
                 <div key={i} style={{ display:"flex", gap:14, alignItems:"flex-start" }}>
                   <div style={{ display:"flex", flexDirection:"column", alignItems:"center" }}>
-                    <div style={{ width:32, height:32, borderRadius:"50%", border:`2px solid ${step>i?C.teal:step===i?C.gold:C.border}`, background:step>i?C.tealDim:step===i?C.goldDim:"transparent", display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:600, color:step>i?C.teal:step===i?C.gold:C.textDim, transition:"all 0.3s" }}>
-                      {step>i?"✓":i+1}
+                    <div style={{ width:34, height:34, borderRadius:"50%",
+                      border:`2px solid ${step>i?"#4ecdc4":step===i?"#e8b96a":C.border}`,
+                      background:step>i?"rgba(78,205,196,0.15)":step===i?"rgba(232,185,106,0.15)":"transparent",
+                      display:"flex", alignItems:"center", justifyContent:"center",
+                      fontSize:13, fontWeight:700,
+                      color:step>i?"#4ecdc4":step===i?"#e8b96a":C.textDim,
+                      transition:"all 0.3s", boxShadow:step===i?`0 0 0 4px ${"#e8b96a"}18`:undefined }}>
+                      {step>i?<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>:i+1}
                     </div>
-                    {i < STEPS.length-1 && <div style={{ width:2, height:28, background:step>i?C.teal:C.border, transition:"background 0.4s", margin:"4px 0" }}/>}
+                    {i < STEPS.length-1 && <div style={{ width:2, height:28, background:step>i?"#4ecdc4":C.border, transition:"background 0.4s", margin:"4px 0", borderRadius:1 }}/>}
                   </div>
                   <div style={{ paddingBottom:i<STEPS.length-1?28:0 }}>
-                    <div style={{ fontSize:13, fontWeight:500, color:step===i?C.text:C.textMuted }}>{s}</div>
+                    <div style={{ fontSize:13.5, fontWeight:600, color:step===i?C.text:C.textMuted }}>{s}</div>
                     <div style={{ fontSize:11, color:C.textDim, marginTop:2 }}>
-                      {i===0?"Select your role":i===1?"Your name, email & department":i===2?"Secure your account":"Enter OTP sent to your email"}
+                      {i===0?"Name, email, department & USN":i===1?"Create a secure password":"6-digit OTP sent to your email"}
                     </div>
                   </div>
                 </div>
               ))}
             </div>
 
-            {/* DB schema */}
-            <div style={{ padding:"14px 16px", background:C.surface, border:`1px solid ${C.border}`, borderRadius:10 }}>
-              <div style={{ fontSize:11, fontWeight:500, letterSpacing:"0.08em", textTransform:"uppercase", color:C.textDim, marginBottom:10 }}>
-                {role==="student"?"Student":"Teacher"} Account Fields
-              </div>
-              {(role==="student"
-                ? [["👤","Name"],["✉️","Email"],["🔒","Password"],["📂","Department"],["📅","Year"]]
-                : [["👤","Name"],["✉️","Email"],["🔒","Password"],["📂","Department"]]
-              ).map(([ic,f]) => (
-                <div key={f} style={{ display:"flex", alignItems:"center", gap:8, marginBottom:7, fontSize:12, color:C.textMuted }}>
-                  <span>{ic}</span> {f}
+            {/* What you get */}
+            <div style={{ padding:"16px 18px", background:`linear-gradient(165deg,${C.surface} 0%,${C.surface2} 100%)`, border:`1px solid ${C.border}`, borderRadius:14 }}>
+              <div style={{ fontSize:11, fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", color:C.textDim, marginBottom:12 }}>What you get</div>
+              {[["📅","#4ecdc4","Attendance tracking with shortage alerts"],["📝","#e8b96a","Submit assignments & check feedback"],["📊","#a78bfa","View marks and auto-calculated CGPA"],["📂","#60a5fa","Access all course materials & notes"]].map(([icon,col,text]) => (
+                <div key={text} style={{ display:"flex", alignItems:"center", gap:10, marginBottom:10, fontSize:13, color:C.textMuted }}>
+                  <div style={{ width:30, height:30, borderRadius:8, background:`${col}18`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:14, flexShrink:0 }}>{icon}</div>
+                  {text}
                 </div>
               ))}
             </div>
@@ -284,7 +308,7 @@ export default function Signup({ onSignup, onGoLogin }) {
         </div>
 
         {/* ── Right form panel ── */}
-        <div style={{ width:520, display:"flex", alignItems:"center", justifyContent:"center", padding:"40px 48px", background:C.surface, borderLeft:`1px solid ${C.border}`, position:"relative", zIndex:1, transition:"background 0.3s" }}>
+        <div style={{ width:520, display:"flex", alignItems:"center", justifyContent:"center", padding:"40px 48px", background: isDark ? "rgba(22,27,37,0.92)" : "rgba(255,255,255,0.92)", borderLeft:`1px solid ${C.border}`, position:"relative", zIndex:1, transition:"background 0.3s", backdropFilter:"blur(20px)", WebkitBackdropFilter:"blur(20px)", boxShadow: isDark ? "-20px 0 60px rgba(0,0,0,0.3)" : "-20px 0 60px rgba(0,0,0,0.06)" }}>
           <div className="form-card" style={{ width:"100%" }}>
 
             {/* Progress bar */}
@@ -301,67 +325,57 @@ export default function Signup({ onSignup, onGoLogin }) {
             <form onSubmit={handleSubmit}>
 
               {/* ── Step 0: Role ── */}
+              {/* ── Step 0: Personal details ── */}
               {step===0 && (
-                <div style={{ display:"flex", flexDirection:"column", gap:12, marginBottom:24 }}>
-                  {[
-                    { id:"student", icon:"🎓", label:"Student", desc:"View courses, attendance, assignments & marks", fields:"Name · Email · Password · Department · Year" },
-                    { id:"teacher", icon:"📚", label:"Teacher", desc:"Manage courses, attendance, assignments & marks", fields:"Name · Email · Password · Department" },
-                  ].map(r => (
-                    <div key={r.id} className="role-card" onClick={()=>setRole(r.id)}
-                      style={{ display:"flex", alignItems:"flex-start", gap:14, padding:"16px", borderRadius:12, border:`1px solid ${role===r.id?C.goldMid:C.border}`, background:role===r.id?C.goldDim:C.surface2, cursor:"pointer", transition:"all 0.2s" }}>
-                      <div style={{ width:44, height:44, borderRadius:11, background:role===r.id?"rgba(232,185,106,0.2)":C.surface3, display:"flex", alignItems:"center", justifyContent:"center", fontSize:22, flexShrink:0 }}>{r.icon}</div>
-                      <div style={{ flex:1 }}>
-                        <div style={{ fontSize:15, fontWeight:600, color:role===r.id?C.gold:C.text, marginBottom:4 }}>{r.label}</div>
-                        <div style={{ fontSize:12.5, color:C.textMuted, lineHeight:1.5, marginBottom:8 }}>{r.desc}</div>
-                        <div style={{ fontSize:11, color:C.textDim, fontStyle:"italic" }}>Fields: {r.fields}</div>
-                      </div>
-                      <div style={{ width:20, height:20, borderRadius:"50%", border:`2px solid ${role===r.id?C.gold:C.border}`, background:role===r.id?C.gold:"transparent", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, fontSize:11, color:"#0d1117", fontWeight:700, marginTop:2 }}>
-                        {role===r.id&&"✓"}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* ── Step 1: Personal details ── */}
-              {step===1 && (
                 <div style={{ marginBottom:8 }}>
                   <Field label="Full Name"      placeholder="e.g. Arjun Kumar"    icon="👤" value={form.name}       onChange={set("name")}       error={errors.name}       C={C} />
                   <Field label="Email Address"  placeholder="you@institution.edu" icon="✉️" value={form.email}      onChange={set("email")}      error={errors.email}      C={C} type="email" />
                   <SelectField label="Department" options={DEPARTMENTS}            icon="📂" value={form.department} onChange={set("department")} error={errors.department} C={C} />
                   {role==="student" && (
-                    <SelectField label="Year of Study" options={YEARS}            icon="📅" value={form.year}       onChange={set("year")}       error={errors.year}       C={C} />
+                    <>
+                      <SelectField label="Year of Study" options={YEARS}            icon="📅" value={form.year}       onChange={set("year")}       error={errors.year}       C={C} />
+                      <SelectField label="Semester" options={({"1st Year":["Sem 1","Sem 2"],"2nd Year":["Sem 3","Sem 4"],"3rd Year":["Sem 5","Sem 6"],"4th Year":["Sem 7","Sem 8"]})[form.year]||["Sem 1","Sem 2"]} icon="📆" value={form.semester} onChange={set("semester")} error={errors.semester} C={C} />
+                      <Field label="USN / Registration Number" placeholder="e.g. 1VT22CS001" icon="🪪" value={form.usn} onChange={set("usn")} error={errors.usn} C={C} />
+                    </>
                   )}
+                  <Field label="Phone Number" placeholder="e.g. 9876543210" icon="📞" value={form.phone} onChange={set("phone")} error={errors.phone} C={C} />
+
                 </div>
               )}
 
               {/* ── Step 2: Password ── */}
-              {step===2 && (
+              {step===1 && (
                 <div style={{ marginBottom:8 }}>
                   <Field label="Create Password"  placeholder="Minimum 6 characters" icon="🔒" value={form.password} onChange={set("password")} error={errors.password} type="password" showPass={showPass} setShowPass={setShowPass} C={C} />
                   <Field label="Confirm Password" placeholder="Re-enter password"    icon="🔐" value={form.confirm}  onChange={set("confirm")}  error={errors.confirm}  type="password" showPass={showPass} setShowPass={setShowPass} C={C} />
 
                   {/* Account summary */}
-                  <div style={{ padding:"14px 16px", background:C.surface2, border:`1px solid ${C.border}`, borderRadius:10, marginTop:8 }}>
-                    <div style={{ fontSize:11, fontWeight:500, letterSpacing:"0.08em", textTransform:"uppercase", color:C.textDim, marginBottom:10 }}>Account Summary</div>
-                    {[
-                      ["Role",       role==="student"?"🎓 Student":"📚 Teacher"],
-                      ["Name",       form.name       || "—"],
-                      ["Email",      form.email      || "—"],
-                      ["Department", form.department || "—"],
-                      ...(role==="student" ? [["Year", form.year || "—"]] : []),
-                    ].map(([k,v]) => (
-                      <div key={k} style={{ display:"flex", justifyContent:"space-between", marginBottom:7, fontSize:13 }}>
-                        <span style={{ color:C.textMuted }}>{k}</span>
-                        <span style={{ color:C.text, fontWeight:500 }}>{v}</span>
-                      </div>
-                    ))}
+                  <div style={{ padding:"16px 18px", background:C.surface2, border:`1px solid ${C.border}`, borderRadius:12, marginTop:8 }}>
+                    <div style={{ fontSize:10, fontWeight:700, letterSpacing:"0.1em", textTransform:"uppercase", color:C.textMuted, marginBottom:14 }}>Account Summary</div>
+                    <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+                      {[
+                        ["Role",       "🎓 Student"],
+                        ["Name",       form.name       || "—"],
+                        ["Email",      form.email      || "—"],
+                        ["Department", form.department || "—"],
+                        ["Year",       form.year       || "—"],
+                        ["Semester",   form.semester   || "—"],
+                        ["USN",        form.usn        || "—"],
+                        ["Phone",      form.phone      || "—"],
+                      ].map(([k, v]) => (
+                        <div key={k} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"6px 0", borderBottom:`1px solid ${C.border}` }}>
+                          <span style={{ fontSize:11, fontWeight:600, letterSpacing:"0.06em", textTransform:"uppercase", color:C.textDim }}>{k}</span>
+                          <span style={{ fontSize:13, color:C.text, fontWeight:500, textAlign:"right", maxWidth:"60%", wordBreak:"break-all" }}>{v}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
+
                 </div>
               )}
 
               {/* ── Step 3: OTP Verification ── */}
-              {step===3 && (
+              {step===2 && (
                 <div style={{ marginBottom:8 }}>
                   {/* Email sent banner */}
                   <div style={{ textAlign:"center", marginBottom:28 }}>
@@ -436,15 +450,23 @@ export default function Signup({ onSignup, onGoLogin }) {
                   <button type="button" className="next-btn"
                     onClick={next}
                     disabled={otpSending}
-                    style={{ flex:2, padding:"12px", borderRadius:9, border:"none", background:"linear-gradient(135deg,#e8b96a,#c4973a)", color:"#0d1117", fontFamily:body, fontSize:14, fontWeight:600, cursor:otpSending?"not-allowed":"pointer", transition:"all 0.2s", boxShadow:"0 4px 16px rgba(232,185,106,0.2)", opacity:otpSending?0.7:1 }}>
-                    {otpSending ? "Sending OTP…" : "Continue →"}
+                    style={{ flex:2, padding:"12px", borderRadius:10, border:"none", background:"linear-gradient(135deg,#e8b96a,#c4973a)", color:"#0d1117", fontFamily:body, fontSize:14, fontWeight:700, cursor:otpSending?"not-allowed":"pointer", boxShadow:"0 4px 20px rgba(232,185,106,0.3)", display:"flex", alignItems:"center", justifyContent:"center", gap:8 }}>
+                    {otpSending ? (
+                      <><span style={{ width:14, height:14, border:"2px solid #0d1117", borderTopColor:"transparent", borderRadius:"50%", display:"inline-block", animation:"spin 0.8s linear infinite" }}/> Sending OTP…</>
+                    ) : (
+                      <>Continue <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></>
+                    )}
                   </button>
                 ) : (
                   // Final submit button (step 3)
                   <button type="submit" className="next-btn"
                     disabled={loading || otp.length !== 6}
-                    style={{ flex:2, padding:"12px", borderRadius:9, border:"none", background:"linear-gradient(135deg,#e8b96a,#c4973a)", color:"#0d1117", fontFamily:body, fontSize:14, fontWeight:600, cursor:(loading||otp.length!==6)?"not-allowed":"pointer", transition:"all 0.2s", opacity:(loading||otp.length!==6)?0.6:1, boxShadow:"0 4px 16px rgba(232,185,106,0.2)" }}>
-                    {loading ? "Creating account…" : `Verify & Register ${role==="student"?"🎓":"📚"}`}
+                    style={{ flex:2, padding:"12px", borderRadius:10, border:"none", background:"linear-gradient(135deg,#e8b96a,#c4973a)", color:"#0d1117", fontFamily:body, fontSize:14, fontWeight:700, cursor:(loading||otp.length!==6)?"not-allowed":"pointer", opacity:(loading||otp.length!==6)?0.6:1, boxShadow:"0 4px 20px rgba(232,185,106,0.3)", display:"flex", alignItems:"center", justifyContent:"center", gap:8 }}>
+                    {loading ? (
+                      <><span style={{ width:14, height:14, border:"2px solid #0d1117", borderTopColor:"transparent", borderRadius:"50%", display:"inline-block", animation:"spin 0.8s linear infinite" }}/> Creating account…</>
+                    ) : (
+                      <>{`Verify & Register ${role==="student"?"🎓":"📚"}`}</>
+                    )}
                   </button>
                 )}
               </div>

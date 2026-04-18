@@ -1,1 +1,15 @@
+# Sensitive config
 EduTrack-Backend/src/main/resources/application.properties
+
+# Mac junk
+.DS_Store
+**/.DS_Store
+
+# Frontend build & deps
+EduTrack-Frontend/node_modules/
+EduTrack-Frontend/build/
+EduTrack-Frontend/playwright-report/
+EduTrack-Frontend/test-results/
+
+# Backend build
+EduTrack-Backend/target/
