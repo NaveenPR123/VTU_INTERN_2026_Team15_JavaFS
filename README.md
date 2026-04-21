@@ -10,11 +10,11 @@ EduTrack is a centralized academic platform connecting students, teachers, and a
 
 | Layer | Technology |
 |---|---|
-| Frontend | React 19, CSS |
+| Frontend | React 19 |
 | Backend | Spring Boot 3, Java 17 |
 | Database | MySQL 8 |
-| Testing | Playwright (E2E) |
-| Auth | BCrypt password hashing, OTP via Gmail SMTP |
+| Testing | Playwright (E2E), JUnit 5, Mockito |
+| API Testing | Postman |
 
 ---
 
@@ -27,6 +27,8 @@ EduTrack is a centralized academic platform connecting students, teachers, and a
 - **Maintenance Mode** — admin can lock the platform
 - **Bulk Import** — CSV upload for students and teachers
 - **43 Playwright E2E tests** covering all major flows
+- **31 JUnit tests** covering services and controllers
+- **26 Postman requests** covering all API endpoints
 
 ---
 
@@ -35,88 +37,122 @@ EduTrack is a centralized academic platform connecting students, teachers, and a
 ```
 EduTrack/
 ├── EduTrack-Backend/        # Spring Boot REST API (port 8080)
+│   └── src/test/java/       # JUnit tests (31 tests)
 ├── EduTrack-Frontend/       # React app (port 3000)
-│   └── tests/e2e/           # Playwright test suite
-├── EduTrack-Database/       # MySQL schema
-└── docs/                    # Screenshots & design documents
+│   └── tests/e2e/           # Playwright E2E tests (43 tests)
+├── EduTrack-Database/       # MySQL schema (Schema.sql)
+└── docs/
+    └── EduTrack.postman_collection.json   # Postman collection (26 requests)
 ```
+
+---
+
+## Prerequisites
+
+| Software | Version | Download |
+|---|---|---|
+| Java | 17 (LTS) | https://adoptium.net |
+| Git | Latest | https://git-scm.com/download/win |
+| Node.js | 18+ (LTS) | https://nodejs.org |
+| MySQL | 8.0 | https://dev.mysql.com/downloads/installer |
+| VS Code | Latest | https://code.visualstudio.com |
+| Eclipse | Latest | https://www.eclipse.org/downloads |
+| Postman | Latest | https://www.postman.com/downloads |
+
+> **Eclipse users:** Install the **Spring Tools 4** plugin (Help → Eclipse Marketplace → search "Spring Tools 4") and **Lombok** (https://projectlombok.org/download) before importing the project.
 
 ---
 
 ## Getting Started
 
-### Prerequisites
-- Java 17+
-- Maven 3.8+
-- Node.js 18+
-- MySQL 8+
+### 1. Clone the repo
+
+```bash
+git clone https://github.com/NaveenPR123/VTU_INTERN_2026_Team15_JavaFS.git
+cd VTU_INTERN_2026_Team15_JavaFS
+```
 
 ---
 
-### 1. Database Setup
+### 2. Database Setup
+
+Open **MySQL Workbench** and run:
 
 ```sql
 CREATE DATABASE edutrack;
 ```
 
 Then import the schema:
-```bash
-mysql -u root -p edutrack < EduTrack-Database/Schema.sql
-```
+- File → Open SQL Script → select `EduTrack-Database/Schema.sql` → click the lightning bolt
 
 ---
 
-### 2. Backend Setup
+### 3. Backend Setup (Eclipse)
 
-```bash
-cd EduTrack-Backend/src/main/resources
-cp application.properties.template application.properties
-```
+1. File → Import → Maven → **Existing Maven Projects**
+2. Browse → select `EduTrack-Backend` → Finish
+3. Wait for dependencies to download
+4. In Project Explorer expand `EduTrack-Backend → src/main/resources`
+5. Right-click `application.properties.template` → Copy → Paste → rename to `application.properties`
+6. Fill in your details:
 
-Edit `application.properties` and fill in:
 ```properties
-spring.datasource.password=YOUR_MYSQL_PASSWORD
+spring.datasource.password=YOUR_MYSQL_ROOT_PASSWORD
 spring.mail.username=YOUR_GMAIL@gmail.com
 spring.mail.password=YOUR_GMAIL_APP_PASSWORD
 ```
 
-> Gmail App Password: Google Account → Security → 2-Step Verification → App Passwords
+> **Gmail App Password:** myaccount.google.com → Security → 2-Step Verification → App Passwords → create one → copy the 16-character code
 
-```bash
-cd EduTrack-Backend
-mvn spring-boot:run
-```
+7. Right-click `EduTrackApplication.java` → **Run As → Spring Boot App**
+8. Wait for `Started EduTrackApplication` in Console
+9. Backend running at `http://localhost:8080`
 
-Backend runs at `http://localhost:8080`
-
-**Default admin credentials (auto-created on first run):**
+**Default admin account (auto-created on first run):**
 - Email: `admin@edutrack.com`
 - Password: `Admin@123`
 
 ---
 
-### 3. Frontend Setup
+### 4. Frontend Setup (VS Code)
+
+1. Open VS Code → File → Open Folder → select `EduTrack-Frontend`
+2. Open terminal (Terminal → New Terminal) and run:
 
 ```bash
-cd EduTrack-Frontend
 npm install
 npm start
 ```
 
-Frontend runs at `http://localhost:3000`
+Browser opens automatically at `http://localhost:3000`
 
 ---
 
-### 4. Running Tests
+## Running Tests
 
-Ensure both backend and frontend are running, then:
+### JUnit (Backend)
+In Eclipse → right-click `src/test/java` → **Run As → JUnit Test**
+
+Or via terminal:
+```bash
+cd EduTrack-Backend
+mvn test
+```
+
+### Playwright (Frontend E2E)
+Make sure both backend and frontend are running, then in VS Code terminal:
 
 ```bash
-cd EduTrack-Frontend
 npx playwright install chromium   # first time only
-npx playwright test               # run all 43 tests
-npx playwright show-report        # view HTML report
+npx playwright test
+npx playwright show-report
 ```
+
+### Postman (API)
+1. Open Postman → Import
+2. Select `docs/EduTrack.postman_collection.json`
+3. Make sure backend is running at `http://localhost:8080`
+4. Run any request
 
 ---
 
@@ -127,17 +163,33 @@ npx playwright show-report        # view HTML report
 | POST | `/api/auth/login/admin` | Admin login |
 | POST | `/api/auth/login/student` | Student login |
 | POST | `/api/auth/login/teacher` | Teacher login |
+| POST | `/api/auth/register/student` | Student registration |
 | POST | `/api/otp/forgot-password` | Send OTP (role-validated) |
+| POST | `/api/otp/verify` | Verify OTP |
 | GET | `/api/students` | List all students |
 | GET | `/api/teachers` | List all teachers |
 | GET | `/api/courses` | List all courses |
+| GET | `/api/attendance/student/{id}` | Student attendance |
+| GET | `/api/marks/student/{id}` | Student marks |
 | GET | `/api/system/settings` | System settings |
+
+---
+
+## Summary — What runs where
+
+| What | Tool | Port |
+|---|---|---|
+| Database | MySQL Workbench | 3306 |
+| Backend | Eclipse | 8080 |
+| Frontend | VS Code | 3000 |
+
+**All three must be running at the same time for the app to work.**
 
 ---
 
 ## Team
 
-**VTU Internship 2026 — Team 15**  
+**VTU Internship 2026 — Team 15**
 Java Full Stack Track
 
 ---
