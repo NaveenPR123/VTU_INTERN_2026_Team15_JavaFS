@@ -1,0 +1,298 @@
+{
+  "info": {
+    "name": "EduTrack API",
+    "description": "Complete API test collection for EduTrack backend",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8080" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Admin Login - Success",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/auth/login/admin",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"admin@edutrack.com\",\n  \"password\": \"Admin@123\"\n}" }
+          }
+        },
+        {
+          "name": "Admin Login - Wrong Password",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/auth/login/admin",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"admin@edutrack.com\",\n  \"password\": \"wrongpass\"\n}" }
+          }
+        },
+        {
+          "name": "Student Login - Success",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/auth/login/student",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"student@test.com\",\n  \"password\": \"Test@123\"\n}" }
+          }
+        },
+        {
+          "name": "Teacher Login - Success",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/auth/login/teacher",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"teacher@test.com\",\n  \"password\": \"Test@123\"\n}" }
+          }
+        },
+        {
+          "name": "Register Student",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/auth/register/student",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Test Student\",\n  \"email\": \"newstudent@test.com\",\n  \"password\": \"Test@123\",\n  \"department\": \"Computer Science and Engineering\",\n  \"year\": \"1st Year\",\n  \"semester\": \"Sem 1\",\n  \"phone\": \"9876543210\",\n  \"usn\": \"1VT25CS001\"\n}" }
+          }
+        },
+        {
+          "name": "Change Admin Password - Success",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/auth/change-password/admin",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"id\": 1,\n  \"currentPassword\": \"Admin@123\",\n  \"newPassword\": \"NewPass@123\"\n}" }
+          }
+        },
+        {
+          "name": "Change Admin Password - Wrong Current",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/auth/change-password/admin",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"id\": 1,\n  \"currentPassword\": \"wrongpass\",\n  \"newPassword\": \"NewPass@123\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "OTP",
+      "item": [
+        {
+          "name": "Send OTP - Valid Student Email",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/otp/forgot-password",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"student@test.com\",\n  \"role\": \"student\"\n}" }
+          }
+        },
+        {
+          "name": "Send OTP - Email Not Found",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/otp/forgot-password",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"ghost@nowhere.com\",\n  \"role\": \"student\"\n}" }
+          }
+        },
+        {
+          "name": "Send OTP - Wrong Role",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/otp/forgot-password",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"admin@edutrack.com\",\n  \"role\": \"teacher\"\n}" }
+          }
+        },
+        {
+          "name": "Verify OTP - Invalid",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/otp/verify",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"student@test.com\",\n  \"otp\": \"000000\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Students",
+      "item": [
+        {
+          "name": "Get All Students",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/students"
+          }
+        },
+        {
+          "name": "Get Student by ID",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/students/1"
+          }
+        },
+        {
+          "name": "Update Student",
+          "request": {
+            "method": "PUT",
+            "url": "{{base_url}}/api/students/1",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Updated Name\",\n  \"phone\": \"9999999999\"\n}" }
+          }
+        },
+        {
+          "name": "Admin Add Student",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/auth/admin/add-student",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Admin Added Student\",\n  \"email\": \"adminadded@test.com\",\n  \"password\": \"Test@123\",\n  \"department\": \"Computer Science and Engineering\",\n  \"year\": \"2nd Year\",\n  \"semester\": \"Sem 3\",\n  \"phone\": \"9876543210\",\n  \"usn\": \"1VT25CS099\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Teachers",
+      "item": [
+        {
+          "name": "Get All Teachers",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/teachers"
+          }
+        },
+        {
+          "name": "Get Teacher by ID",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/teachers/1"
+          }
+        },
+        {
+          "name": "Update Teacher",
+          "request": {
+            "method": "PUT",
+            "url": "{{base_url}}/api/teachers/1",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Updated Teacher\",\n  \"phone\": \"9999999999\"\n}" }
+          }
+        },
+        {
+          "name": "Admin Add Teacher",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/auth/admin/add-teacher",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"New Teacher\",\n  \"email\": \"newteacher@test.com\",\n  \"password\": \"Test@123\",\n  \"department\": \"Computer Science and Engineering\",\n  \"phone\": \"9876543210\",\n  \"employeeId\": \"EMP999\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Courses",
+      "item": [
+        {
+          "name": "Get All Courses",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/courses"
+          }
+        },
+        {
+          "name": "Get Course by ID",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/courses/1"
+          }
+        },
+        {
+          "name": "Get Courses by Teacher",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/courses/teacher/1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Attendance",
+      "item": [
+        {
+          "name": "Get Attendance by Student",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/attendance/student/1"
+          }
+        },
+        {
+          "name": "Get Attendance by Course",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/attendance/course/1"
+          }
+        },
+        {
+          "name": "Mark Attendance",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/attendance",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"student\": { \"studentId\": 1 },\n  \"course\": { \"courseId\": 1 },\n  \"attendanceDate\": \"2026-04-21\",\n  \"status\": \"Present\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Marks",
+      "item": [
+        {
+          "name": "Get Marks by Student",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/marks/student/1"
+          }
+        },
+        {
+          "name": "Get Marks by Course",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/marks/course/1"
+          }
+        },
+        {
+          "name": "Enter Marks",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/marks",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"student\": { \"studentId\": 1 },\n  \"course\": { \"courseId\": 1 },\n  \"marks\": 85\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "System Settings",
+      "item": [
+        {
+          "name": "Get System Settings",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/system/settings"
+          }
+        },
+        {
+          "name": "Update System Settings",
+          "request": {
+            "method": "PUT",
+            "url": "{{base_url}}/api/system/settings",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"maintenanceMode\": false,\n  \"registrationOpen\": true,\n  \"activeYear\": \"2025-26\",\n  \"activeSemester\": \"Even\"\n}" }
+          }
+        }
+      ]
+    }
+  ]
+}
