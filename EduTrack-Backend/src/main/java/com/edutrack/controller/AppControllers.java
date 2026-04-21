@@ -26,7 +26,7 @@ record AttendanceStatsDTO(Integer studentId, String name, double attendancePerce
 // ══════════════════════════════════════════════════════════════
 @RestController
 @RequestMapping("/api/courses")
-@CrossOrigin(origins = {"http://localhost:3000","http://localhost:3006","http://localhost:5500"})
+@CrossOrigin(origins = "*")
 class CourseController {
 
     @Autowired private CourseRepository     courseRepo;
@@ -90,7 +90,7 @@ class CourseController {
 // ══════════════════════════════════════════════════════════════
 @RestController
 @RequestMapping("/api/attendance")
-@CrossOrigin(origins = {"http://localhost:3000","http://localhost:3006","http://localhost:5500"})
+@CrossOrigin(origins = "*")
 class AttendanceController {
 
     @Autowired private AttendanceRepository attendanceRepo;
@@ -189,7 +189,7 @@ class AttendanceController {
 // ══════════════════════════════════════════════════════════════
 @RestController
 @RequestMapping("/api/assignments")
-@CrossOrigin(origins = {"http://localhost:3000","http://localhost:3006","http://localhost:5500"})
+@CrossOrigin(origins = "*")
 class AssignmentController {
 
     @Autowired private AssignmentRepository assignmentRepo;
@@ -242,7 +242,7 @@ class AssignmentController {
 // ══════════════════════════════════════════════════════════════
 @RestController
 @RequestMapping("/api/marks")
-@CrossOrigin(origins = {"http://localhost:3000","http://localhost:3006","http://localhost:5500"})
+@CrossOrigin(origins = "*")
 class MarksController {
 
     @Autowired private MarksRepository marksRepo;
@@ -291,7 +291,7 @@ class MarksController {
 // ══════════════════════════════════════════════════════════════
 @RestController
 @RequestMapping("/api/students")
-@CrossOrigin(origins = {"http://localhost:3000","http://localhost:3006","http://localhost:5500"})
+@CrossOrigin(origins = "*")
 class StudentController {
 
     @Autowired private StudentRepository studentRepo;
@@ -392,7 +392,7 @@ class StudentController {
 // ══════════════════════════════════════════════════════════════
 @RestController
 @RequestMapping("/api/teachers")
-@CrossOrigin(origins = {"http://localhost:3000","http://localhost:3006","http://localhost:5500"})
+@CrossOrigin(origins = "*")
 class TeacherController {
 
     @Autowired private TeacherRepository       teacherRepo;

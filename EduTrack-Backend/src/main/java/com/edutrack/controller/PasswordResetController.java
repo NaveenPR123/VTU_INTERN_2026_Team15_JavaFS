@@ -12,7 +12,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = {"http://localhost:3000","http://localhost:3006","http://localhost:5500"})
+@CrossOrigin(origins = "*")
 public class PasswordResetController {
 
     @Autowired private AuthService authService;

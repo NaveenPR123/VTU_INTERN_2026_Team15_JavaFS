@@ -17,7 +17,7 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/api/submissions")
-@CrossOrigin(origins = {"http://localhost:3000","http://localhost:3006","http://localhost:5500"})
+@CrossOrigin(origins = "*")
 public class SubmissionController {
 
     @Autowired private SubmissionRepository submissionRepo;

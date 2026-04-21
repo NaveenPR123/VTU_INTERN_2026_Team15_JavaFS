@@ -16,7 +16,7 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/api/bulk")
-@CrossOrigin(origins = {"http://localhost:3000","http://localhost:3006","http://localhost:5500"})
+@CrossOrigin(origins = "*")
 public class BulkImportController {
 
     @Autowired private StudentRepository    studentRepo;

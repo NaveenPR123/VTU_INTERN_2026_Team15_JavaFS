@@ -14,7 +14,7 @@ import java.util.Map;
 */
 @RestController
 @RequestMapping("/api/system")
-@CrossOrigin(origins = {"http://localhost:3000","http://localhost:3006","http://localhost:5500"})
+@CrossOrigin(origins = "*")
 public class SystemSettingsController {
 
     @Autowired private SystemSettingsRepository settingsRepo;
