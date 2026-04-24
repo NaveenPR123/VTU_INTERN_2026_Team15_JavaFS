@@ -6,15 +6,27 @@ EduTrack is a centralized academic platform connecting students, teachers, and a
 
 ---
 
+## Live Demo
+
+| Service | URL |
+|---|---|
+| Frontend | https://vtu-intern-2026-team15-java-fs.vercel.app |
+| Backend API | https://edutrack-backend-o1ym.onrender.com |
+
+> The backend sleeps after 15 minutes of inactivity on the free tier. Before opening the app, visit the backend URL first and wait for a response, then open the frontend.
+
+---
+
 ## Tech Stack
 
 | Layer | Technology |
 |---|---|
 | Frontend | React 19 |
-| Backend | Spring Boot 3, Java 17 |
+| Backend | Spring Boot 3, Java 21 |
 | Database | MySQL 8 |
 | Testing | Playwright (E2E), JUnit 5, Mockito |
 | API Testing | Postman |
+| Deployment | Vercel (frontend), Render (backend), Railway (database) |
 
 ---
 
@@ -37,12 +49,16 @@ EduTrack is a centralized academic platform connecting students, teachers, and a
 ```
 EduTrack/
 ├── EduTrack-Backend/        # Spring Boot REST API (port 8080)
-│   └── src/test/java/       # JUnit tests (31 tests)
+│   ├── src/main/java/       # Controllers, Services, Entities
+│   ├── src/test/java/       # JUnit tests (31 tests)
+│   └── Dockerfile           # Docker config for Render deployment
 ├── EduTrack-Frontend/       # React app (port 3000)
 │   └── tests/e2e/           # Playwright E2E tests (43 tests)
 ├── EduTrack-Database/       # MySQL schema (Schema.sql)
 └── docs/
-    └── EduTrack.postman_collection.json   # Postman collection (26 requests)
+    ├── EduTrack.postman_collection.json   # Postman collection
+    ├── SystemDesignDocument.md            # System design document
+    └── WBS.md                             # Work breakdown structure
 ```
 
 ---
@@ -51,7 +67,7 @@ EduTrack/
 
 | Software | Version | Download |
 |---|---|---|
-| Java | 17 (LTS) | https://adoptium.net |
+| Java | 21 (LTS) | https://adoptium.net |
 | Git | Latest | https://git-scm.com/download/win |
 | Node.js | 18+ (LTS) | https://nodejs.org |
 | MySQL | 8.0 | https://dev.mysql.com/downloads/installer |
@@ -59,7 +75,7 @@ EduTrack/
 | Eclipse | Latest | https://www.eclipse.org/downloads |
 | Postman | Latest | https://www.postman.com/downloads |
 
-> **Eclipse users:** Install the **Spring Tools 4** plugin (Help → Eclipse Marketplace → search "Spring Tools 4") and **Lombok** (https://projectlombok.org/download) before importing the project.
+> **Eclipse users:** Install **Spring Tools 4** plugin (Help → Eclipse Marketplace) and **Lombok** (https://projectlombok.org/download) before importing the project.
 
 ---
 
@@ -83,7 +99,7 @@ CREATE DATABASE edutrack;
 ```
 
 Then import the schema:
-- File → Open SQL Script → select `EduTrack-Database/Schema.sql` → click the lightning bolt
+- File → Open SQL Script → select `EduTrack-Database/Schema.sql` → click the lightning bolt ⚡
 
 ---
 
@@ -92,7 +108,7 @@ Then import the schema:
 1. File → Import → Maven → **Existing Maven Projects**
 2. Browse → select `EduTrack-Backend` → Finish
 3. Wait for dependencies to download
-4. In Project Explorer expand `EduTrack-Backend → src/main/resources`
+4. Expand `EduTrack-Backend → src/main/resources`
 5. Right-click `application.properties.template` → Copy → Paste → rename to `application.properties`
 6. Fill in your details:
 
@@ -117,14 +133,14 @@ spring.mail.password=YOUR_GMAIL_APP_PASSWORD
 ### 4. Frontend Setup (VS Code)
 
 1. Open VS Code → File → Open Folder → select `EduTrack-Frontend`
-2. Open terminal (Terminal → New Terminal) and run:
+2. Open terminal (Terminal → New Terminal):
 
 ```bash
 npm install
 npm start
 ```
 
-Browser opens automatically at `http://localhost:3000`
+Browser opens at `http://localhost:3000`
 
 ---
 
@@ -140,9 +156,10 @@ mvn test
 ```
 
 ### Playwright (Frontend E2E)
-Make sure both backend and frontend are running, then in VS Code terminal:
+Make sure both backend and frontend are running:
 
 ```bash
+cd EduTrack-Frontend
 npx playwright install chromium   # first time only
 npx playwright test
 npx playwright show-report
@@ -152,7 +169,6 @@ npx playwright show-report
 1. Open Postman → Import
 2. Select `docs/EduTrack.postman_collection.json`
 3. Make sure backend is running at `http://localhost:8080`
-4. Run any request
 
 ---
 
@@ -175,7 +191,7 @@ npx playwright show-report
 
 ---
 
-## Summary — What runs where
+## Summary
 
 | What | Tool | Port |
 |---|---|---|
@@ -189,7 +205,7 @@ npx playwright show-report
 
 ## Team
 
-**VTU Internship 2026 — Team 15**
+**VTU Internship 2026 — Team 15**  
 Java Full Stack Track
 
 ---
