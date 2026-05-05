@@ -64,6 +64,12 @@ public class AuthService {
             response.put("message", "Email already registered");
             return response;
         }
+        if (teacher.getEmployeeId() != null && !teacher.getEmployeeId().isBlank()
+                && teacherRepo.existsByEmployeeId(teacher.getEmployeeId())) {
+            response.put("success", false);
+            response.put("message", "Employee ID '" + teacher.getEmployeeId() + "' is already assigned to another teacher");
+            return response;
+        }
         teacher.setPassword(encoder.encode(teacher.getPassword()));
         Teacher saved = teacherRepo.save(teacher);
         response.put("success", true);
@@ -105,6 +111,12 @@ public class AuthService {
         if (teacherRepo.existsByEmail(teacher.getEmail())) {
             response.put("success", false);
             response.put("message", "Email already registered");
+            return response;
+        }
+        if (teacher.getEmployeeId() != null && !teacher.getEmployeeId().isBlank()
+                && teacherRepo.existsByEmployeeId(teacher.getEmployeeId())) {
+            response.put("success", false);
+            response.put("message", "Employee ID '" + teacher.getEmployeeId() + "' is already assigned to another teacher");
             return response;
         }
         teacher.setPassword(encoder.encode(teacher.getPassword()));
