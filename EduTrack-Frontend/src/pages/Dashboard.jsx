@@ -2730,13 +2730,27 @@ function AdminStudents({ C }) {
   const [editForm, setEditForm] = useState({});
   const [editMsg,  setEditMsg]  = useState("");
 
-  const load = () => {
+  const load = (retryIfEmpty = false) => {
     setLoading(true);
     fetch(`${API}/api/students`)
-      .then(r=>r.json()).then(d=>{ setStudents(Array.isArray(d)?d:[]); setLoading(false); })
-      .catch(()=>setLoading(false));
+      .then(r => r.json())
+      .then(d => {
+        const list = Array.isArray(d) ? d : [];
+        if (retryIfEmpty && list.length === 0) {
+          setTimeout(() => {
+            fetch(`${API}/api/students`)
+              .then(r => r.json())
+              .then(d2 => { setStudents(Array.isArray(d2) ? d2 : []); setLoading(false); })
+              .catch(() => setLoading(false));
+          }, 3000);
+        } else {
+          setStudents(list);
+          setLoading(false);
+        }
+      })
+      .catch(() => setLoading(false));
   };
-  useEffect(()=>{ load(); }, []);
+  useEffect(() => { load(); }, []);
 
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this student?")) return;
@@ -2754,7 +2768,7 @@ function AdminStudents({ C }) {
     });
     setSaving(false); setShowForm(false);
     setForm({ name:"", email:"", password:"", department:"", year:"3rd Year", phone:"", usn:"", semester:"Sem 5" });
-    load();
+    load(true);
   };
 
   const startEdit = (s) => {
@@ -3031,17 +3045,34 @@ function AdminTeachers({ C }) {
   const [showForm, setShowForm] = useState(false);
   const [form,     setForm]     = useState({ name:"", email:"", password:"", department:"", phone:"", employeeId:"" });
   const [saving,   setSaving]   = useState(false);
+  const [addMsg,   setAddMsg]   = useState("");
   const [editUser, setEditUser] = useState(null);
   const [editForm, setEditForm] = useState({});
   const [editMsg,  setEditMsg]  = useState("");
 
-  const load = () => {
+  const load = (retryIfEmpty = false) => {
     setLoading(true);
     fetch(`${API}/api/teachers`)
-      .then(r=>r.json()).then(d=>{ setTeachers(Array.isArray(d)?d:[]); setLoading(false); })
-      .catch(()=>setLoading(false));
+      .then(r => r.json())
+      .then(d => {
+        const list = Array.isArray(d) ? d : [];
+        // If we just added a teacher but the list came back empty (backend still waking),
+        // retry once after 3 seconds
+        if (retryIfEmpty && list.length === 0) {
+          setTimeout(() => {
+            fetch(`${API}/api/teachers`)
+              .then(r => r.json())
+              .then(d2 => { setTeachers(Array.isArray(d2) ? d2 : []); setLoading(false); })
+              .catch(() => setLoading(false));
+          }, 3000);
+        } else {
+          setTeachers(list);
+          setLoading(false);
+        }
+      })
+      .catch(() => setLoading(false));
   };
-  useEffect(()=>{ load(); }, []);
+  useEffect(() => { load(); }, []);
 
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this teacher?")) return;
@@ -3052,14 +3083,24 @@ function AdminTeachers({ C }) {
 
   const handleAdd = async () => {
     if (!form.name||!form.email||!form.password||!form.department) return;
-    setSaving(true);
-    await fetch(`${API}/api/auth/admin/add-teacher`, {
-      method:"POST", headers:{"Content-Type":"application/json"},
-      body: JSON.stringify(form)
-    });
-    setSaving(false); setShowForm(false);
-    setForm({ name:"", email:"", password:"", department:"", phone:"", employeeId:"" });
-    load();
+    setSaving(true); setAddMsg("");
+    try {
+      const res = await fetch(`${API}/api/auth/admin/add-teacher`, {
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify(form)
+      });
+      const data = await res.json().catch(()=>({}));
+      if (!res.ok) {
+        setAddMsg(data.message || `Error ${res.status}: Failed to add teacher.`);
+        setSaving(false); return;
+      }
+      setSaving(false); setShowForm(false); setAddMsg("");
+      setForm({ name:"", email:"", password:"", department:"", phone:"", employeeId:"" });
+      load(true);
+    } catch(e) {
+      setAddMsg("Network error: " + e.message);
+      setSaving(false);
+    }
   };
 
   const startEdit = (t) => {
@@ -3156,8 +3197,9 @@ function AdminTeachers({ C }) {
           </div>
           <div style={{ display:"flex", gap:10 }}>
             <button onClick={handleAdd} disabled={saving} style={{ padding:"10px 20px", borderRadius:9, border:"none", background:"linear-gradient(135deg,#e8b96a,#c4973a)", color:"#0d1117", fontFamily:body, fontSize:13, fontWeight:600, cursor:"pointer" }}>{saving?"Saving…":"Add Teacher"}</button>
-            <button onClick={()=>setShowForm(false)} style={{ padding:"10px 20px", borderRadius:9, border:`1px solid ${C.border}`, background:"transparent", color:C.textMuted, fontFamily:body, fontSize:13, cursor:"pointer" }}>Cancel</button>
+            <button onClick={()=>{ setShowForm(false); setAddMsg(""); }} style={{ padding:"10px 20px", borderRadius:9, border:`1px solid ${C.border}`, background:"transparent", color:C.textMuted, fontFamily:body, fontSize:13, cursor:"pointer" }}>Cancel</button>
           </div>
+          {addMsg && <div style={{ marginTop:10, fontSize:13, color: addMsg.startsWith("Error")||addMsg.startsWith("Network") ? "#f87171" : C.teal }}>{addMsg}</div>}
         </Panel>
       )}
 
@@ -4723,6 +4765,25 @@ export default function Dashboard({ role="student", user=null, setUser, onLogout
 
   const [active, setActive] = useState("Dashboard");
 
+  // ── Backend wake-up banner (Render free tier sleeps after 15 min) ──
+  const [backendStatus, setBackendStatus] = useState("checking"); // "checking" | "awake" | "waking"
+  useEffect(() => {
+    let dismissed = false;
+    const start = Date.now();
+    const check = () => {
+      fetch(`${API}/api/health`, { signal: AbortSignal.timeout(4000) })
+        .then(r => { if (r.ok && !dismissed) setBackendStatus("awake"); })
+        .catch(() => {
+          if (dismissed) return;
+          // If it took more than 4s, backend is waking up — show banner and keep retrying
+          if (Date.now() - start > 3500) setBackendStatus("waking");
+          setTimeout(check, 4000);
+        });
+    };
+    check();
+    return () => { dismissed = true; };
+  }, []);
+
   const getPage = () => {
     if (isAdmin) {
       switch(active) {
@@ -4787,6 +4848,7 @@ export default function Dashboard({ role="student", user=null, setUser, onLogout
         ::-webkit-scrollbar-thumb { background:${C.surface3}; border-radius:6px; }
         @keyframes fadeUp { from { opacity:0; transform: translateY(14px); } to { opacity:1; transform: translateY(0); } }
         @keyframes pageIn { from { opacity:0; transform: translateY(8px); } to { opacity:1; transform: translateY(0); } }
+        @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes slideInRight { from { transform: translateX(100%); opacity: 0.6; } to { transform: translateX(0); opacity: 1; } }
         @keyframes ringPulse { 0%,100% { filter: brightness(1); } 50% { filter: brightness(1.08); } }
         @keyframes shimmer { 0% { background-position: -120% 0; } 100% { background-position: 120% 0; } }
@@ -4939,6 +5001,14 @@ export default function Dashboard({ role="student", user=null, setUser, onLogout
             <div style={{ position:"fixed", inset:0, pointerEvents:"none", zIndex:0,
               background:`radial-gradient(ellipse 55% 40% at 80% 10%, ${C.teal}07 0%, transparent 65%),
                           radial-gradient(ellipse 45% 35% at 10% 90%, ${C.purple}07 0%, transparent 65%)` }}/>
+            {/* ── Backend wake-up banner ── */}
+            {backendStatus === "waking" && (
+              <div style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 16px", marginBottom:16, borderRadius:12, background:"rgba(234,179,8,0.12)", border:"1px solid rgba(234,179,8,0.3)", fontSize:13, color:"#fbbf24", position:"relative", zIndex:2 }}>
+                <span style={{ display:"inline-block", width:10, height:10, borderRadius:"50%", border:"2px solid #fbbf24", borderTopColor:"transparent", animation:"spin 0.9s linear infinite", flexShrink:0 }}/>
+                <span><strong>Backend is waking up</strong> — Render's free tier sleeps after 15 min of inactivity. This usually takes 20–40 seconds. Data will load automatically once it's ready.</span>
+                <button onClick={() => setBackendStatus("awake")} style={{ marginLeft:"auto", background:"none", border:"none", color:"#fbbf24", cursor:"pointer", fontSize:16, lineHeight:1, flexShrink:0 }}>×</button>
+              </div>
+            )}
             <div style={{ position:"relative", zIndex:1 }}>
               {getPage()}
             </div>
