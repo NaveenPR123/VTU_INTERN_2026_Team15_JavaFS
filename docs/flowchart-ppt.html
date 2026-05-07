@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>EduTrack Flow Chart – PPT</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#fff; display:flex; justify-content:center; align-items:flex-start; padding:30px; font-family:'Segoe UI',Arial,sans-serif; }
+</style>
+</head>
+<body>
+<!-- 16:9 PPT size: 960×540 -->
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="600" viewBox="0 0 960 600">
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0,8 3,0 6" fill="#444"/>
+    </marker>
+    <style>
+      text { font-family:'Segoe UI',Arial,sans-serif; }
+      .conn { stroke:#444; stroke-width:1.8; fill:none; marker-end:url(#arr); }
+      .line { stroke:#444; stroke-width:1.8; fill:none; }
+      .t1 { font-size:11px; font-weight:700; }
+      .t2 { font-size:10px; font-weight:400; }
+      .edge { font-size:10px; font-weight:700; }
+    </style>
+  </defs>
+
+  <!-- TITLE -->
+  <text x="480" y="30" text-anchor="middle" font-size="22" font-weight="800" fill="#1a56db" letter-spacing="3">EduTrack – System Flow Chart</text>
+
+  <!-- ── START ── rounded rect -->
+  <rect x="380" y="45" width="200" height="36" rx="18" fill="#bbf7d0" stroke="#16a34a" stroke-width="2"/>
+  <text x="480" y="68" text-anchor="middle" class="t1" fill="#14532d">🌐 User visits EduTrack</text>
+
+  <line x1="480" y1="81" x2="480" y2="98" class="conn"/>
+
+  <!-- ── LOGIN ── parallelogram -->
+  <polygon points="360,100 620,100 600,136 340,136" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/>
+  <text x="480" y="123" text-anchor="middle" class="t1" fill="#3b0764">👤 Register / Login</text>
+
+  <line x1="480" y1="136" x2="480" y2="153" class="conn"/>
+
+  <!-- ── ROLE DECISION ── diamond -->
+  <polygon points="480,155 570,195 480,235 390,195" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="480" y="190" text-anchor="middle" class="t1" fill="#92400e">Select</text>
+  <text x="480" y="206" text-anchor="middle" class="t1" fill="#92400e">Role?</text>
+
+  <!-- left to Student -->
+  <polyline points="390,195 160,195 160,255" class="conn"/>
+  <text x="272" y="187" text-anchor="middle" class="edge" fill="#0d9488">Student</text>
+
+  <!-- center to Teacher -->
+  <line x1="480" y1="235" x2="480" y2="255" class="conn"/>
+  <text x="494" y="250" class="edge" fill="#ca8a04">Teacher</text>
+
+  <!-- right to Admin -->
+  <polyline points="570,195 800,195 800,255" class="conn"/>
+  <text x="688" y="187" text-anchor="middle" class="edge" fill="#4338ca">Admin</text>
+
+  <!-- ── STUDENT box ── rect -->
+  <rect x="60" y="257" width="200" height="100" rx="6" fill="#ccfbf1" stroke="#0d9488" stroke-width="2"/>
+  <text x="160" y="277" text-anchor="middle" class="t1" fill="#134e4a">🎓 Student</text>
+  <text x="160" y="295" text-anchor="middle" class="t2" fill="#134e4a">• View Courses &amp; Marks</text>
+  <text x="160" y="311" text-anchor="middle" class="t2" fill="#134e4a">• View Attendance</text>
+  <text x="160" y="327" text-anchor="middle" class="t2" fill="#134e4a">• Submit Assignments</text>
+  <text x="160" y="343" text-anchor="middle" class="t2" fill="#134e4a">• Course Materials</text>
+
+  <!-- ── TEACHER box ── rect -->
+  <rect x="380" y="257" width="200" height="100" rx="6" fill="#fef9c3" stroke="#ca8a04" stroke-width="2"/>
+  <text x="480" y="277" text-anchor="middle" class="t1" fill="#713f12">📚 Teacher</text>
+  <text x="480" y="295" text-anchor="middle" class="t2" fill="#713f12">• Mark Attendance</text>
+  <text x="480" y="311" text-anchor="middle" class="t2" fill="#713f12">• Enter Marks + Grade</text>
+  <text x="480" y="327" text-anchor="middle" class="t2" fill="#713f12">• Manage Assignments</text>
+  <text x="480" y="343" text-anchor="middle" class="t2" fill="#713f12">• Upload Materials</text>
+
+  <!-- ── ADMIN box ── rect -->
+  <rect x="700" y="257" width="200" height="100" rx="6" fill="#e0e7ff" stroke="#4338ca" stroke-width="2"/>
+  <text x="800" y="277" text-anchor="middle" class="t1" fill="#1e1b4b">⚙️ Admin</text>
+  <text x="800" y="295" text-anchor="middle" class="t2" fill="#1e1b4b">• Manage Students</text>
+  <text x="800" y="311" text-anchor="middle" class="t2" fill="#1e1b4b">• Manage Teachers</text>
+  <text x="800" y="327" text-anchor="middle" class="t2" fill="#1e1b4b">• Manage Courses</text>
+  <text x="800" y="343" text-anchor="middle" class="t2" fill="#1e1b4b">• System Settings</text>
+
+  <!-- merge all 3 down -->
+  <polyline points="160,357 160,400 800,400 800,357" class="line"/>
+  <line x1="480" y1="357" x2="480" y2="400" class="line"/>
+  <line x1="480" y1="400" x2="480" y2="418" class="conn"/>
+
+  <!-- ── DB ── rect -->
+  <rect x="310" y="420" width="340" height="40" rx="6" fill="#ccfbf1" stroke="#0d9488" stroke-width="2"/>
+  <text x="480" y="438" text-anchor="middle" class="t1" fill="#134e4a">🗄️ Data Saved — Railway MySQL</text>
+  <text x="480" y="453" text-anchor="middle" class="t2" fill="#134e4a">via Spring Boot JPA (Render Backend)</text>
+
+  <line x1="480" y1="460" x2="480" y2="478" class="conn"/>
+
+  <!-- ── FORGOT PASSWORD decision ── diamond -->
+  <polygon points="480,480 570,515 480,550 390,515" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="480" y="510" text-anchor="middle" class="t1" fill="#92400e">Forgot</text>
+  <text x="480" y="526" text-anchor="middle" class="t1" fill="#92400e">Password?</text>
+
+  <!-- YES -->
+  <polyline points="390,515 280,515 280,560" class="conn"/>
+  <text x="332" y="507" text-anchor="middle" class="edge" fill="#16a34a">YES</text>
+  <rect x="180" y="562" width="200" height="36" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="2"/>
+  <text x="280" y="578" text-anchor="middle" class="t1" fill="#7c2d12">📧 OTP via Gmail → Reset</text>
+  <text x="280" y="592" text-anchor="middle" class="t2" fill="#7c2d12">6-digit · 10 min expiry</text>
+
+  <!-- NO → END -->
+  <polyline points="570,515 700,515 700,562" class="conn"/>
+  <text x="638" y="507" text-anchor="middle" class="edge" fill="#dc2626">NO</text>
+
+  <!-- ── END ── rounded rect -->
+  <rect x="600" y="562" width="200" height="36" rx="18" fill="#bbf7d0" stroke="#16a34a" stroke-width="2"/>
+  <text x="700" y="585" text-anchor="middle" class="t1" fill="#14532d">🎓 Session Complete ✅</text>
+
+</svg>
+</body>
+</html>
